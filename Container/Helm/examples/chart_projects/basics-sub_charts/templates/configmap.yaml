@@ -1,0 +1,27 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ .Release.Name }}-configmap
+  namespace: default
+{{- template "mychart.systemlabels" $ }}
+{{- include "mychart.version" $ | indent 4 }}
+data:
+  myvalue: "Sample Config Map"
+  costCode: {{ .Values.costCode }}
+  Zone: {{ quote .Values.infra.zone }}
+  Region: {{ quote .Values.infra.region }}
+  ProjectCode: {{ upper .Values.projectCode }}
+  {{- $relname := .Release.Name }}
+  {{- with .Values.tags }}
+  Machine_Type: {{ .machine | default "NA" | quote }}
+  Rack_ID: {{ .rack | quote }}
+  Storage_Type: {{ .drive | upper | quote }}
+  Video_Card: {{ .vcard | quote }}
+  Release: {{ $relname }}
+  {{- end }}
+  Lang_Used: |-
+    {{- range $index, $topping := .Values.LangUsed }}
+    - {{ $index }} : {{ $topping }}
+    {{- end}}
+{{- include "mychart.version" $ | indent 2 }}
+  orgdomain: {{ .Values.global.orgdomain }}

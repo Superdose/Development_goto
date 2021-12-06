@@ -1,0 +1,183 @@
+**************************************************
+Notes::
+// Kubernetes cluster consists off:
+// 1) Control Plane -> coordinates the cluster
+// 2) Nodes -> workers, that run applications
+// 3) Kubelet -> agent for managing the node and communicating with the Kubernetes control plane
+
+// Further Kubernetes components
+// a) Pod -> one or more containers running together on one node
+// b) Controller -> for creating/updating pods and other objects
+// -> many types of controllers -> Deployment, ReplicaSet, StatefulSet, DaemonSet, Job, CronJob, etc.
+// c) Service -> network endpoint to connect to a pod
+// -> a service is a stable address for pod(s)
+// -> if we want to connect to pod(s), we need a service
+// d) Namespace -> filtered group of objects in cluster (not a security feature)
+// e) Deployment -> further abstraction above pods
+// -> responsible of running multiple replicas
+// f) StatefulSet -> used for Containers/Pods (with DBs most often), that need to write and read data
+// -> for services (not kubernetes-services), that need to persist data
+// -> multiple Containers with DBs -> data still needs to be consistent across all DBs
+// g) ConfigMap -> stores non-confidential data, that needs to be used by apps but can change
+// -> pods can consume ConfigMaps as environment variables, command-line arguments, 
+// or as configuration files in a volume
+// -> for example: URL to a DB (via kubernetes-service)
+// h) Secrets -> same as ConfigMap but for confidential data
+// -> for example Usernames and Passwords for a DB
+
+// Service Types:
+// 1) ClusterIP (default)
+// -> only reachable from within cluster (nodes and pods)
+// -> single, internal virtual IP allocated
+// -> ?pods can reach service on apps port number?
+// 2) NodePort
+// -> high port allocated on each node
+// -> port is open on every nodes IP
+// -> anyone can connect (if they can reach node)
+// -> (other pods need to be updated to this port)
+// Service 1) and 2) are always available in Kubernetes
+// 3) LoadBalancer
+// -> controls a load-balancer endpoint external to the cluster
+// -> only available when infra provider gives you a load-balancer (AWS, ELB, etc.)
+// -> creates NodePort + ClusterIP services, tells load-balancer to send to NodePort
+// 4) ExternalName
+// -> adds CNAME DNS record to CoreDNS only
+// -> not used for pods, but for giving pods a DNS name to user for something outside Kubernetes
+
+// 3 Types of persistent data in Kubernetes:
+// 1) Persistent Volume (PV)
+// -> cluster ressource used to store data
+// -> declared via yaml-file
+// -> created and managed by yourself
+// -> persistent volumens are not namespaced
+// 2) Persistent Volume Claim (PVC)
+// -> declared via yaml-file
+// -> claims a volume with a certain storage size (defined in PV) and additional characteristics
+// like access type etc. -> whatever PV matches these criterias will be used
+// -> PVC must be used in Pod-Configuration
+// -> PVC must exist in the same namespace as the pods using them
+// -> pod requests volume through PVC -> PVC tries to find a volume in cluster -> volume has 
+// actual storage backend -> volume is mounted into pod -> volume is mounted into container
+// 3) Storage Class (SC)
+// -> provisions PVs dynamically when PVCs claims it
+// -> automates creating a PV
+// -> abstracts underlying storage provider and parameters for that storage
+// -> Pod claims storage via PVC -> PVC requests storage from SC -> SC creates PV that meets
+// the needs of the claim
+
+// Stateful applications use StatefulSet
+// -> StatefulSet-Pods have their own identity
+// -> you need to use remote PVs -> each PV needs to be accessible from any node
+**************************************************
+kubectl
+// lists all commands
+
+**************************************************
+kubectl version
+// the client and server version of kubernetes
+
+**************************************************
+kubectl run POD_NAME --image IMAGE_NAME
+1) kubectl run my-nginx --image nginx
+2) kubectl run nginx --image=nginx --command -- <cmd> <arg1> ... <argN>
+3) kubectl run tmp-shell --rm -it --image bretfisher/netshoot -- bash
+// creates a pod with the specified podname and a container with the corresponding image inside it
+// 1) -> create a pod with the name "my-nginx" that uses the nginx image
+// 2) -> Start the nginx pod using a different command and custom arguments 
+// 3) -> start a pod with the name "tmp-shell" 
+// -> --rm -> remove it after it is shut down
+// -> -it -> create a interactive terminal
+// -> -- bash -> everything after the double dash with a space will be run as a command, when the pod is started
+// -> after all 3) will start a pod and run an interactive shell for you
+
+**************************************************
+kubectl get OBJECT_TYPE [-w]
+1) kubectl get pods
+2) kubectl get all
+// lists objects of the specified type
+// "all" -> see all objects
+// -w -> watch a command (better do it in a separate tab/window)
+
+**************************************************
+kubectl delete OBJECT_TYPE NAME
+1) kubectl delete pod my-nginx
+// delete the specified object and all objects below/managed by this object
+
+**************************************************
+kubectl create OBJECT_TYPE OBJECT_NAME [--image IMAGE_NAME]
+1) kubectl create deployment my-apache --image httpd
+// create an object with the specified name etc.
+// for example 1)
+// -> we create a deployment named "my-apache", which then by default also creates a replicaset,
+// which then creates a pod by default with a container running the specified image
+
+**************************************************
+kubectl scale [--replicas AMOUNT] OBJECT_TYPE_SHORT/OBJECT_NAME[-ID]
+(or) kubectl scale [--replicas AMOUNT] OBJECT_TYPE OBJECT_NAME[-ID]
+1) kubectl scale --replicas 2 rs/my-apache-7b68fdd849
+2) kubectl scale --replicas=3 rs/foo
+3) kubectl scale --current-replicas=2 --replicas=3 deployment/mysql
+4) kubectl scale --replicas 2 deploy/my-apache
+5) kubectl scale --replicas 2 deployment my-apache
+// Set a new size for a Deployment, ReplicaSet, Replication Controller, or StatefulSet
+// 2) -> Scale a replicaset named 'foo' to 3
+// 3) -> If the deployment named mysql's current size is 2, scale mysql to 3
+// 4) -> same as 5), just shorter
+
+**************************************************
+kubectl logs [POD] [-c CONTAINER_NAME] [--follow] [--tail AMOUNT] [-l]
+1) kubectl logs nginx
+2) kubectl logs nginx --all-containers=true
+3) kubectl logs deployment/nginx -c nginx-1
+4) kubectl logs deployment/my-apache
+5) kubectl logs -l app=my-apache
+// print the logs for a container in a pod or specified ressource
+// if the pod has only one container, the container name is optional
+// 1) -> Return snapshot logs from pod nginx with only one container
+// 2) -> Return snapshot logs from pod nginx with multi containers
+// 3) -> Return snapshot logs from container nginx-1 of a deployment named nginx
+// 4) -> Return the logs of one container from deployment "my-apache"
+// 5) -> return the logs of all containers with or inside of objects with the specified label
+// --follow -> wait for anything new to show up in the logs of that container
+// --tail -> shows the lines of the log
+// -- tail 1 -> return last line only
+// -l -> --selector -> label query to filter on
+
+**************************************************
+kubectl describe OBJECT_TYPE OBJECT_NAME
+1) kubectl describe pod my-apache-7b68fdd849-7xc69
+2) kubectl describe pod/my-apache-7b68fdd849-7xc69
+// Print a detailed description of the selected resources, including related resources such as events
+// or controllers. You may select a single object by name, all objects of that type, provide a name
+// prefix, or label selector.
+// 1) -> print the detailed description of the specified pod
+// 2) -> same as 1), but shorter
+
+**************************************************
+1) kubectl expose deployment httpenv --port 8888
+2) kubectl expose deployment httpenv --port 8888 --name httpenv-np --type NodePort
+3) kubectl expose deployment httpenv --port 8888 --name httpenv-lb --type LoadBalancer
+// Expose a resource as a new Kubernetes service.
+// 1) -> create a new ClusterIP-Service in front of the deployment
+// 2) -> create a new NodePort-Service in front of the deployment
+// -> this will also automatically create a ClusterIP-Service, which NodePort uses to redirect to
+// 3) -> create a new LoadBalancer-Service in front of the deployment
+// -> (! LoadBalancers are usually provided by the provider) -> Docker Desktop also brings one per default
+// -> -> this will also automatically create a NodePort-Service, which is used for redirection
+// -> the NodePort-Service will again automatically create a ClusterIP-Service
+// -> always: LoadBalancer > NodePort > ClusterIP
+
+**************************************************
+1) kubectl exec -it mongo-depl-5fd6b7d4b4-9cn7t [-c CONTAINERNAME] -- bin/bash
+// exec executes a command in a container
+// 1) -> get an interactive terminal inside the (specified) container of the pod
+
+**************************************************
+kubectl api-resources
+// get the api resources of the cluster
+// ie. get a list of resources the cluster supports
+
+**************************************************
+kubectl api-versions
+// Print the supported API versions on the server, in the form of "group/version"
+// ie. get the API versions the cluster supports

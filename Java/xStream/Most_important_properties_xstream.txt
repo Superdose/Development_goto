@@ -1,0 +1,31 @@
+**************************************************
+Additional notes:
+- xStream is used for serialization/deserialization of Java objects to XML (can also be JSON)
+- xStream is used by default by axon for commands, events, queries etc.
+- since xStream 1.4.18 whitelisting is used for security reasons
+	-> so to use axon (or rather xStream as a dependency) you have to configure it correctly
+	-> this TXT has the most important configuration properties
+		-> !! configuration happens in Java code (Spring Boot -> configuration bean)
+
+**************************************************
+com.thoughtworks.xstream.XStream
+// the class to use for configuration
+// create an instance of this class and put it into the application context
+// XStream xStream = new XStream();
+
+**************************************************
+xStream.addPermission(NoTypePermission.NONE);
+// dispose all configuration and set permission to nothing
+// usually the first method to be called on the xStream object to start configuration
+
+**************************************************
+xStream.addPermission(NullPermission.NULL);
+// null values are allowed to be serialized/deserialized
+
+**************************************************
+xStream.addPermission(PrimitiveTypePermission.PRIMITIVES);
+// java primitive types are allowed to be serialized/deserialized
+
+**************************************************
+
+

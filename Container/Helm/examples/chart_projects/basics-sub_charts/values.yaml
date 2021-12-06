@@ -1,0 +1,19 @@
+costCode: CC98112
+projectCode: aazzxxyy
+infra:
+  zone: a,b,c
+  region: us-e
+tags:
+  machine: frontdrive
+  rack: 4c
+  drive: ssd
+  vcard: 8g
+LangUsed:
+  - Python
+  - Ruby
+  - Java
+  - Scala
+mysubchart:
+  dbhostname: prodmysqlnode
+global:
+  orgdomain: com.muthu4all

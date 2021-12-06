@@ -1,0 +1,23 @@
+**************************************************
+Notes::
+
+**************************************************
+helm package [chart_directory]
+1) helm package .\helmpushdemo\
+// packages a chart into a versioned chart archive file, which then can be uploaded
+// to a repository for example
+
+**************************************************
+helm push [chart_directory] [repo]
+1) helm push .\helmpushdemo\ mychartmuseumrepo
+// adds the chart package to the specified repository
+// added through the helm-push plugin
+// is still experimental
+
+**************************************************
+helm repo index [directory]
+1) helm repo index .
+// create the corresponding index.yaml for the specified chart_packages in the directory
+// 1) -> create the corresponding yaml for the specified chart_packages in the current directory
+
+**************************************************

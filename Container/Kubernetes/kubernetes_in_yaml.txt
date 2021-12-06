@@ -1,0 +1,62 @@
+**************************************************
+Notes::
+// kubernetes configuration file (YAML or JSON)
+// each file contains one or more manifests
+// each manifest describes an API object (deployment, job, secret)
+// each manifest needs four parts (root-fields)
+// -> apiVersion:
+// -> kind:
+// -> metadata:
+// -> spec:
+// apiVersion + kind together decide, which resource you gonna get 
+// and which api-version you are going to be able to use for that resource
+// Label Selectors:
+// -> the "glue" telling services and deployments which pods are theirs
+// -> many resources use label selectors to "link" resource dependencies
+// -> use labels and selectors to control which pods go to which nodes
+// -> taints and tolerations also control node placement (but very advanced)
+
+// store the yaml config file with your code (best practice)
+
+// "OBJECT_TYPE" = "RESOURCE_TYPE"
+
+// some Images dont like Windows line breaks (CRLF) -> use UNIX line breaks (LF)
+// -> this is important for example when dealing with secrets or ConfigMaps
+
+**************************************************
+kubectl api-resources
+// get the api resources of the cluster
+// ie. get a list of resources the cluster supports
+
+**************************************************
+kubectl api-versions
+// Print the supported API versions on the server, in the form of "group/version"
+// ie. get the API versions the cluster supports
+
+**************************************************
+kubectl explain RESOURCE_TYPE[.ROOT_FIELD[.FIELD[.FIELD...]]] [--recursive]
+1) kubectl explain services --recursive
+2) kubectl explain services.spec
+3) kubectl explain deployment.spec.template.spec
+// list all keys of the specified resource-type
+
+**************************************************
+kubectl apply [-f] [yaml-file] [--dry-run]
+1) kubectl apply -f app.yml
+// 1) -> apply the manifest-informations to kubernetes in app.yml
+// -f -> file
+
+**************************************************
+kubectl delete[-f] [yaml-file] [--dry-run]
+1) kubectl delete -f app.yml
+// 1) -> delete the manifest-informations in kubernetes in app.yml
+// -f -> file
+
+**************************************************
+kubectl diff [-f] [yaml-file]
+1) kubectl diff -f app.yml
+// !!for what ever reason doesnt work currently, seems like the executable is missing
+// gives back the actual difference between what we wanna give the server and what the current status is of
+// the resources
+
+**************************************************

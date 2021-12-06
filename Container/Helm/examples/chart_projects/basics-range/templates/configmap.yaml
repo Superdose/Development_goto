@@ -1,0 +1,21 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ .Release.Name }}-configmap
+  namespace: default
+  labels:
+    {{- with .Values.tags }}
+    first: {{ .machine }}
+    second: {{ .rack }}
+    third: {{ .drive }}
+    {{- end }}
+data:
+  myvalue: "Sample Config Map"
+  costCode: {{ .Values.costCode }}
+  Zone: {{ quote .Values.infra.zone }}
+  Region: {{ quote .Values.infra.region }}
+  ProjectCode: {{ upper .Values.projectCode }}
+  LangUsed: |-
+    {{- range .Values.LangUsed }}
+    - {{ . | title | quote }}
+    {{- end }}

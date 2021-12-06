@@ -1,0 +1,63 @@
+**************************************************
+Annotations::
+@EnableEurekaServer -> "Enables" the Eureka Discovery Server (in Spring.run)
+@EnableDiscoveryClient -> "Enables" the client.. search for Discovery Server (in Spring.run)
+
+**************************************************
+Dependencies::
+Eureka Server / Eureka Discovery Client
+
+**************************************************
+server.port=8761 
+// The server port the tomcat servlet in spring boot should use 
+// -> EurekaDiscoveryService commonly uses port 8761 
+// -> (i.e. the Eureka Server should always get a manual port number => common is 8761)
+// server.port=0 -> application will choose a random port that is available, to start the application
+// This way, you dont have to manually configure the port number -> common use for microservice-clients
+// commonly used on the Eureka-Server or API-Gateway
+
+**************************************************
+eureka.client.register-with-eureka=false
+// Indicates, whether or not this eureka instance should register its information on an available eureka server for discovery
+// by others.
+// This is useful for an Eureka server itself, it there are multiple eureka discovery servers
+// commonly used on the Eureka-Server
+
+**************************************************
+eureka.client.fetch-registry=false
+// Indicates whether this client should fetch eureka registry information from eureka server.
+// commonly used on the Eureka-Server
+
+**************************************************
+eureka.instance.prefer-ip-address=true
+// Will make instance register to Eureka server with the IP address.
+// You do not need to provide IP address in any configuration as 
+// that will be automatically picked up from system by the application.
+// Flag to say that, when guessing a hostname, the IP address of the server should be used in preference to the hostname 
+// reported by the OS
+// commonly used on the Eureka-Server
+
+**************************************************
+eureka.instance.hostname=localhost
+// The hostname if it can be determined at configuration time (otherwise it will be guessed from OS primitives).
+// commonly used on the Eureka-Server
+
+**************************************************
+eureka.client.service-url.defaultZone=http://localhost:8761/eureka
+// Is needed to register clients to the eureka server
+// In the preceding example, "defaultZone" is a magic string fallback value that provides the service URL for 
+// any client that does not express a preference (in other words, it is a useful default).
+// commonly used on the Eureka-Server, clients and on API-Gateway
+
+**************************************************
+spring.application.name=products-service
+// The application name
+// This name will be used, when the client registers to the Eureka-Server
+// commonly used on the clients and API-Gateway (in a sense, it is a client itself)
+
+**************************************************
+eureka.instance.instance-id=${spring.application.name}:${instanceId:${random.value}}
+// defines the id, which is used to register to the eureka server
+// if the id´s overlap, only the most recently started application will be shown in the eureka interface
+// to make sure, that every client has an unique id, we combine the application name with a random number in the id definition
+// used in eureka clients, commonly microservice clients

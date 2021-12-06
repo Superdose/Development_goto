@@ -1,0 +1,42 @@
+**************************************************
+Annotations::
+@EnableDiscoveryClient -> "Enables" the client.. search for Discovery Server (in Spring.run)
+
+**************************************************
+Dependencies::
+Gateway
+Spring Reactive Web (for more configuration -> learn Spring Reactive)
+Eureka Discovery Client
+
+**************************************************
+spring.application.name=api-gateway
+// The application name
+// This name will be used, when the client (for Example: API-Gateway) registers to the Eureka-Server
+
+**************************************************
+server.port=80 (8082 for development)
+// The server port the tomcat servlet in spring boot should use 
+// -> API-Gateway commonly uses port 80 (8082 for development)
+// server.port=0 -> application will choose a random port that is available, to start the application
+// (common for microservice-clients, not for api-gateway)
+// This way, you dont have to manually configure the port number
+
+**************************************************
+eureka.client.service-url.defaultZone=http://localhost:8761/eureka
+// Is needed to register clients to the eureka server
+// In the preceding example, "defaultZone" is a magic string fallback value that provides the service URL for 
+// any client that does not express a preference (in other words, it is a useful default).
+
+**************************************************
+spring.cloud.gateway.discovery.locator.enabled=true
+// Flag that enables DiscoveryClient gateway integration.
+// if u want to use the api-gateway on the existing discovery clients, this has to be enabled
+// i.e. if you want to use load balancing on microservice clients
+
+**************************************************
+spring.cloud.gateway.discovery.locator.lower-case-service-id=true
+// Option to lower case serviceId in predicates and filters, defaults to false. 
+// Note: if enabled, lowercase will be mandatory. Uppercase wont work if enabled.
+// Useful with eureka when it automatically uppercases serviceId. so MYSERIVCE, would match /myservice/**
+
+**************************************************

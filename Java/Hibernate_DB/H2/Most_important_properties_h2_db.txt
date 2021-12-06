@@ -1,0 +1,19 @@
+**************************************************
+Dependencies::
+H2 Database
+
+**************************************************
+spring.datasource.url=jdbc:h2:~/products;AUTO_SERVER=true
+// example for an url via H2-JDBC-Url
+// "~" -> create DB-File in homedirectory
+// "/products" -> db-name
+// "AUTO_SERVER=true" 
+//	-> Enables Multiple processes to access the same database without having to start the server manually.
+
+**************************************************
+spring.h2.console.enabled=true
+// Whether to enable the h2-console.
+
+**************************************************
+spring.h2.console.settings.web-allow-others=true
+// Whether to enable remote access to the console.

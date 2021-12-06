@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postinstalljob-hook-job
+  annotations:
+    "helm.sh/hook": "post-install"
+spec:
+  template:
+    spec:
+      containers:
+      - name: post-install
+        image: busybox
+        imagePullPolicy: IfNotPresent
+        command: ['sh',  '-c', 'echo post-install Job Pod is Running ; sleep 10']
+      restartPolicy: OnFailure
+      terminationGracePeriodSeconds: 0
+  backoffLimit: 3
+  completions: 1
+  parallelism: 1

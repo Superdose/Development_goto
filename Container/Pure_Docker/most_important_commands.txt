@@ -1,0 +1,191 @@
+**************************************************
+Notes::
+// docker uses a "new" format, to sort and order commands clearly
+// new format: docker <command> <subcommand> (options)
+// old format: docker <command> (options)
+// -> old format still works for all commands, that have used the old format
+// example: docker container run <==> docker run 
+
+**************************************************
+docker
+// get a list of all docker commands
+
+**************************************************
+docker COMMAND --help 
+// get more information on a command
+
+**************************************************
+docker version
+// check your docker version
+
+**************************************************
+docker info
+// shows most configuration values for the engine (server)
+
+**************************************************
+docker container run --publish 80:80 --detach --name webhost --env [ENV_VARs] [-t] [-i] [-it] nginx
+docker container run -p 80:80 -de -name webhost -e [ENV_VARs] [-t] [-i] [-it] [IMAGE] [COMMAND] [ARG...]
+docker container run -it --name proxy nginx bash
+docker container run -d --name new_nginx --network my_app_net nginx
+// runs a new container from an image
+// pulls the image-file from docker hub if it isnt already existent in the local image cache
+// --publish 80:80 | --publish [localMachine]:[container]
+// -> all traffic going to port 80 on our machine will be redirected to port 80 in the container
+// --detach
+// -> let the container run in the background
+// --name
+// -> gives the container the specified name
+// -> container names have to be unique
+// --env
+// -> used to set environment variables in the docker container
+// -t
+// -> simulates a real terminal, like what SSH does
+// -i
+// -> keep session open to reveice terminal input
+// -t + -i ==> -it
+// [IMAGE] -> [COMMAND] [ARG...]
+// send optional command and arguments into the new container, you are about to start
+// example: "bash" + "-it" => get a terminal inside the running container
+// --network
+// -> specifies the virtual network the container should be put in
+
+**************************************************
+docker container ls [-a]
+// list running containers
+// -a
+// -> show all existing container, not just running
+
+**************************************************
+docker container stop CONTAINER_ID 
+// stops the container process but doesnt remove it
+// CONTAINER_ID
+// -> doesnt have to be the complete containerId, but has to be enough to be unique
+
+**************************************************
+docker container start CONTAINER_ID
+docker container start -ai ubuntu
+// start an existing stopped container
+// CONTAINER_ID
+// -> doesnt have to be the complete containerId, but has to be enough to be unique
+// -ai -> -a -i
+// -> start the container with attached STDOUT/STDERR and forward signals and attached container's STDIN
+// -> basically this is similar to -it in run -> can be used to access cli in container
+
+**************************************************
+docker container logs CONTAINER_NAME
+// show logs for a specific container
+// CONTAINER_NAME
+// -> name of the container
+
+**************************************************
+docker container rm [-f] 6e7a7 0fb90 af3229
+// delete one or more containers
+// 6e7a7 0fb90 af3229
+// -> containerIds separated by whitespaces
+// -f
+// -> force the deletion. docker wont normally delete running containers
+
+**************************************************
+docker top CONTAINER_NAME
+// list running processes in a specific container
+
+**************************************************
+docker container inspect [--format] CONTAINER_NAME
+// show metadata about the container
+// (startup, config, volumes, networking, etc.)
+// --format
+// -> a common option for formatting the output of commands using "Go templates"
+
+**************************************************
+docker container stats [CONTAINER..]
+// show live performance data for all containers
+// CONTAINER
+// -> you can specifiy containers to monitor, but you dont have to
+// -> if you dont specify containers to monitor, all running containers will be monitored
+
+**************************************************
+docker container exec -it CONTAINER_NAME bash
+// run additional process in running container
+// -it + bash
+// -> run additonal bash in container and get access to it
+// -> alternative: docker container exec -it CONTAINER_NAME sh
+
+**************************************************
+docker network ls
+// lists all networks
+
+**************************************************
+docker network inspect [--format] NETWORK
+// show metadata about the network
+// --format
+// -> a common option for formatting the output of commands using "Go templates"
+
+**************************************************
+docker network create [--driver]
+// spawns a new virtual network for you to attach containers to
+// --driver 
+// -> which driver to use to create a new virtual network
+
+**************************************************
+Notes on Networks::
+// --network bridge
+// -> default docker virtual network, which is NAT´ed behind the host IP
+// -> the default network "bridge" does not have a DNS server build-in by default
+// --network host
+// -> gains performance by skipping virtual networks but sacrifices security of container model
+// --network none
+// -> removes eth0 and only leaves you with localhost interface in container
+// network driver
+// -> build-in or 3rd party extensions that give you virtual network features
+// docker DNS
+// -> Docker daemon has a build-in DNS server that containers use by default
+// -> docker defaults the hostname to the containers name, but you can also set aliases
+
+**************************************************
+docker network connect [OPTIONS] NETWORK CONTAINER
+// connect a container to a network
+// dynamically creates a NIC in a container on an existing virtual network
+
+**************************************************
+docker network disconnect [OPTIONS] NETWORK CONTAINER
+// disconnect a container from a network
+// dynamically removes a NIC from a container on a specific virtual network
+
+**************************************************
+docker image history IMAGE[:TAG]
+// show layers of changed made in image
+
+**************************************************
+docker image inspect
+// returns JSON metadata about the image
+
+**************************************************
+docker image tag SOURCE_IMAGE[:TAG] TARGET_IMAGE[:TAG]
+// assign one or more tags to an image
+
+**************************************************
+docker image push [OPTIONS] NAME[:TAG]
+// uploads changed layers to an image registry (default is hub)
+
+**************************************************
+docker image pull [OPTIONS] NAME[:TAG|@DIGEST]
+// pull an image or a repository from a registry (default is hub)
+
+**************************************************
+docker login [server]
+// defaults to logging in hub, but you can override by adding server-urldock
+
+**************************************************
+docker logout
+// always logout from shared machines or servers when done, to protect your account
+
+**************************************************
+1) docker image build [OPTIONS] PATH | URL | -
+2) docker image build -t customnginx .
+// build an image from a dockerfile
+// -t -> name and optionally the tag of the image to create
+// . -> use Dockerfile in this path
+
+**************************************************
+docker volume create
+// required to do this before "docker run" to use custom drivers and labels

@@ -1,0 +1,26 @@
+**************************************************
+Annotations::
+@NotBlank -> field must have atleast one entry, cannot be blank or null -> String
+@Min -> Minimum possible value
+@Max -> Maximum possible value
+@Valid -> when object is created 
+		-> ie.: "@Valid @RequestBody CreateProductRestModel createProductRestModel"
+	-> activates validation
+
+**************************************************
+Dependencies::
+Spring Boot Starter Validation
+
+**************************************************
+server.error.include-message=always
+- defines, when to include the message attribute in the error response
+	-> "always" -> on
+	-> "never" -> off -> default
+
+**************************************************
+server.error.include-binding-errors=always
+- configures, when to include errors attributes
+	-> errors attribute will contain a very detailed description, 
+	which bean property has failed the validation
+	-> "always" -> on
+	-> "never" -> off -> default

@@ -1,0 +1,5 @@
+costCode: CC98112
+projectCode: aazzxxyy
+infra:
+  zone: a,b,c
+  region: us-e

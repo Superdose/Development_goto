@@ -1,0 +1,151 @@
+**************************************************
+Notes::
+// helm v3 no longer uses tiller to communicate with the kubernetes-cluster
+// -> helm v3 can communicate directly with the cluster
+
+// "Release" -> chart instance loaded into kubernetes
+// -> each release will have a version
+**************************************************
+helm
+// get an overview of all available commands and metadata information about
+// your helm installation
+
+**************************************************
+helm search [WHAT] [NAME]
+1) helm search hub mysql
+2) helm search repo bitnami
+3) helm search repo bitnami/postgres
+// Search provides the ability to search for Helm charts in the various places
+// they can be stored including the Artifact Hub and repositories you have added.
+// Use search subcommands to search different locations for charts.
+// 1) -> search in artifact-hub for mysql
+// 2) -> search the whole bitnami repository
+// 3) -> search for postgres in the bitnami repository
+
+**************************************************
+helm repo list
+1) helm repo ls
+// list all added repositories
+// 1) -> works just as fine with the shortcut "ls"
+
+**************************************************
+helm repo add [NAME] [LINK]
+1) helm repo add bitnami https://charts.bitnami.com/bitnami
+// adds a chart repository (repo under specified link under specified name)
+// 1) -> adds the repository under the specified link under the specified name "bitnami"
+
+**************************************************
+helm repo update
+// Update gets the latest information about charts from the respective chart repositories.
+// Information is cached locally, where it is used by commands like 'helm search'.
+
+**************************************************
+helm install [NAME] [CHART] [-g] [--set]
+1) helm install bitnami/mysql -g
+2) helm install myairflow bitnami/airflow
+3) helm install --debug --dry-run firstdryrun .\mychart\
+4) helm install dryrunno --debug --dry-run --set costCode=CC0000 .\mychart\
+// installs a chart archive -> starts all pods/deployments/services etc. in kubernetes
+// -g -> --generate-name -> instead of specifying a name, helm will generate one automatically
+// --set -> set a value (overrides value.yaml values)
+// 1) -> install the mysql chart archive of the bitnami repository
+// -> generate a name for the helm deployment automatically
+// 2) -> installs the airflow chart archive of the bitnami repository
+// -> the name of the helm deployment is specified with "myairflow"
+// 3)
+// -> --debug -> enable verbose output
+// -> --dry-run -> simulate an install
+// -> dry runs the chart "mychart"
+// 4)
+// -> dry runs the chart "mychart" with the set value of costCode to CC0000
+
+**************************************************
+helm ls
+// get all (currently) deployed charts i.e. releases
+
+**************************************************
+helm uninstall [NAME]
+1) helm uninstall myairflow
+// uninstalls the specified chart archive -> terminates and deletes all pods etc. in kubernetes
+// 1) -> uninstalls the "myairflow" chart archive or rather release
+
+**************************************************
+helm create [NAME]
+1) helm create mychart
+// create a chart directory along with the common files and directories used in a chart.
+// this will be done in the current directory
+// 1) -> create the chart / chart structure "mychart"
+
+**************************************************
+helm get [command]
+1) helm get manifest releasename-test
+// This command consists of multiple subcommands which can be used to
+// get extended information about the release
+// Available Commands:
+// -> all -> download all information for a named release
+// -> hooks -> download all hooks for a named release
+// -> manifest -> download the manifest for a named release
+// -> notes -> download the notes for a named release
+// -> values -> download the values file for a named release
+// 1) -> get the created manifest file of the chart
+
+**************************************************
+helm package [chart_directory]
+// packages a chart into a versioned chart archive file, which then can be uploaded
+// to a repository for example
+
+**************************************************
+helm repo index [directory]
+1) helm repo index .
+// create the corresponding index.yaml for the specified chart_packages in the directory
+
+**************************************************
+helm upgrade [RELEASE_NAME] [CHART]
+1) helm upgrade install-upgrade-rlbk-demo mychartmuseumrepo/upgrade-rlbk
+// upgrades a release to a new version of a chart (with all changes comming with it)
+// 1) -> upgrades the "install-upgrade-rlbk-demo" release with the most recent 
+// "mychartmuseumrepo/upgrade-rlbk" chart
+
+**************************************************
+helm history [RELEASE_NAME]
+1) helm history install-upgrade-rlbk-demo
+// historical revision for a given release
+// 1) -> gets the history of the release "install-upgrade-rlbk-demo"
+// -> for example all the versions used
+
+**************************************************
+helm rollback [RELEASE_NAME] [REVISION_NUMBER]
+1) helm rollback install-upgrade-rlbk-demo 2
+// rollback a release to an earlier revision (for example to reinstall an earlier version)
+// 1) -> rollbacks the release "install-upgrade-rlbk-demo" to the seconds revision
+
+**************************************************
+helm dependency build [CHART_DIRECTORY]
+1) helm dependency build .\dependecytest\
+// installs the given dependencies in the chart.yaml into the chart_directory locally
+// 1) -> installs the dependencies specified in the chart_directory "dependecytest"
+// into the chart_directory locally for use
+
+**************************************************
+helm dependency update [CHART_DIRECTORY]
+1) helm dependency update .\dependecytest\
+// update the on-disk dependencies to mirror Chart.yaml
+
+**************************************************
+helm lint [CHART_DIRECTORY]
+1) -> helm lint .\gitrepotest2\
+// command takes a path to a chart and runs a series of tests to verify that 
+// the chart is well-formed
+// checks for example if it is valid yaml
+// 1) -> adheres whether the gitrepotest2 chart adheres to the standard or not
+
+**************************************************
+helm test [RELEASE_NAME]
+1) helm test install-upgrade-rlbk-demo
+// runs the tests for a release -> are all pods/connections etc. reachable
+
+**************************************************
+helm status [RELEASE_NAME]
+1) helm status upgraderrt
+// shows the status of a named release
+// 1) -> show the status of the release "upgraderrt"

@@ -1,0 +1,73 @@
+**************************************************
+Dependencies::
+Spring Data JPA
+
+**************************************************
+Annotations::
+@Entity 
+// used to mark this class as an Entity bean.
+// So the class should atleast have a package scope no-argument constructor.
+// dont forget to give Entity classes a serialVersionUID
+
+@Table 
+// used to specify the table to persist the data.
+// The name attribute refers to the table name.
+
+@Id
+// used to specify the identifier property of the entity bean.
+// The placement of the @Id annotation determines the default access strategy 
+// that Hibernate will use for the mapping.
+// If the @Id annotation is placed over the field, then field access will be used.
+// Instead if it placed over the getter method of that field, 
+// then property access will be used.
+// !! each Hibernate entity needs an @Id
+
+@GeneratedValue
+// used to specify the primary key generation strategy to use.
+// If the strategy is not specified by default AUTO will be used.
+// AUTO lets the persistence provider choose the generation strategy.
+// If you use Hibernate as your persistence provider, 
+// it selects a generation strategy based on the database specific dialect.
+// available strategies: GenerationType.IDENTITY; GenerationType.SEQUENCE; GenerationType.TABLE;
+
+@Column
+// used to specify the details of the column to which a field or property will be mapped.
+
+@Enumerated
+// marks the field -> it is an enumeration (enum)
+// By default, Hibernate maps an enum to a number.
+// It uses the ordinal value, which is the zero-based position. [0, 1, 2, ...]
+// @Enumerated(EnumType.STRING) -> map the enum value to a String.
+
+**************************************************
+spring.datasource.url=jdbc:h2:~/products;AUTO_SERVER=true
+// jdbc url of the database
+
+**************************************************
+spring.datasource.username=user
+// login username of the database
+// dont confuse with spring.datasource.name=user!!!
+
+**************************************************
+spring.datasource.password=pwd
+// Login password of the database
+
+**************************************************
+spring.datasource.driver-class-name=org.h2.Driver -> oldschool? -> but also kinda works
+spring.datasource.driverClassName=org.h2.Driver -> more modern approach, i think
+// Fully qualified name of the JDBC driver.
+// Auto-detected based on the URL by default
+// in itself it is the package, where the driver can be found
+
+**************************************************
+spring.jpa.hibernate.ddl-auto=update
+// Sets, whether the given hibernate information (for example: in Annotations) 
+// should be used as inputs to perform certain operations on the db
+// Values:
+// -> none -> Disable DDL handling.
+// -> validate -> Validate the schema, make no changes to the database.
+// -> update -> Update the schema if necessary.
+// -> create -> Create the schema and destroy previous data.
+// -> create-drop -> Create and then destroy the schema at the end of the session.
+// Defaults to "create-drop" when using an embedded database and no schema manager was detected.
+// Otherwise, defaults to "none".

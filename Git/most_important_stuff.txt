@@ -1,0 +1,168 @@
+**************************************************
+Notes::
+// all necessary files for a repository will be saved in the folder ".git"
+
+// HEAD: the currently checked out commit
+
+// Git Stash: allows to temporarily cache the state of the working directory and staging-area
+	-> works as a stack
+
+// .gitignore: allows you to ignore files or folders
+
+**************************************************
+git
+// get all common git commands listed
+
+**************************************************
+git --version
+// get the installed git version
+
+**************************************************
+git init
+// creates a new repository in the current directory
+
+**************************************************
+git status
+// shows which files have been edited etc.
+
+**************************************************
+git add [FILE/FOLDER]
+// add a file/folder to the staging area
+
+**************************************************
+git commit [-m <message>] [--amend]
+// creates a commit with all staged changes
+// best practice: one atomar change per commit (fix one bug / add one feature)
+// -m -> message of the commit
+// --amend -> override last commit -> best practice: only on local changes
+
+**************************************************
+git log [-p] [--oneline] [--branches] [--graph] [--remotes]
+// show the commit history of a repository
+// -p -> show the detailed changes of all commits
+// --oneline -> show commit history in a concise short way
+// --branches -> show commit history including all branches
+// --graph -> shows the commit history with a visible split between different branches
+// --remotes -> shows remote repositories in the commit history ("their last linked commit")
+
+**************************************************
+1) git diff [--cached]
+2) git diff <hash1> <hash2>
+3) git diff [...] -- [FILE]
+4) git diff stash
+// 1) -> show the changes/difference between the working directory and the staging area
+// 1) -> --cached -> show the changes/difference between the repository and the staging area
+// 2) -> show the changes/difference between two commits
+// 3) -> show the changes/difference only of the specified file
+// 4) -> shows the diff to the last stash
+
+**************************************************
+1) git reset [<filename>]
+2) git reset <commit hash>
+3) git reset --hard <commit hash>
+4) git reset --hard
+// 1) -> takes all changes out of the staging-area
+// 1) -> <filename> -> only takes the changes out of the staging-area of the specified file
+// 2) -> deletes all commits after the specified commit (hash)
+// -> the changes of all commits will stay in the working directory
+// 3) -> deletes all commits after the specified commit (hash) and the changes will be lost
+// 4) -> override changes in working directory with last commit in repository
+// -> also resets staging-area
+
+**************************************************
+1) git checkout <commit hash>
+2) git checkout master
+3) git checkout [-b] <branch name>
+// 1) -> restores the state of the specified commit -> tries to keep local changes at the same time
+// -> can lead to conflicts
+// -> best practice: only do checkout, if the working directory is empty
+// 2) -> jump back to master
+// 3) -> change to the specified branch 
+// -> -b -> create a new branch and change directly to the branch
+
+**************************************************
+git stash
+// caches the current state of the working directory and staging-area on top of a stack
+
+**************************************************
+git stash pop
+// restores the last state of the working directory and staging-area
+// deletes state from top of the stack
+
+**************************************************
+git stash list
+// show alle stashes
+
+**************************************************
+git revert <commit hash>
+// creates a new commit, who will revert the corresponding changes
+
+**************************************************
+git rm
+// removes a file from the working directory and the staging-area
+
+**************************************************
+git mv
+// actually moves a file in git (default mv -> deletes and recreates the file in git perspective)
+
+**************************************************
+git blame <filename> [--color-lines]
+// shows line for line, in what commit the line was last changed
+// --color-lines -> mark the same commits with the same color
+
+**************************************************
+git branch
+// shows all existing branches
+
+**************************************************
+1) git branch <branch name>
+2) git branch -d <branch name>
+3) git branch -v
+4) git branch -vv
+// 1) -> creates a new branch
+// 2) -> deletes the specified branch
+// 3) -> get more detailed information about the branch in terms of the remote repository
+// 4) -> get even more detailed information about the branch in terms of the remote repository
+
+**************************************************
+git merge <branch>
+// tries to merge the specified branch with the current branch
+
+**************************************************
+1) git rebase <branch>
+2) git rebase --continue
+3) git rebase --abort
+4) git rebase --skip
+// 1) -> builds the commit-history up based on a different branch
+// 2) -> continues with the rebase (assumes conflict in the particular commit has been fixed)
+// 3) -> abort the rebase process
+// 4) -> skip the applied changes of the current commit
+
+**************************************************
+1) git tag
+2) git tag -a v<x.y>
+// 1) -> show all tags
+// 2) -> tag a commit with a given version
+// -a -> prompts git to also ask for a description for the tag
+
+**************************************************
+git clone <url>
+// creates a local copy of the master branch of a repository
+
+**************************************************
+1) git remote -v
+2) git remote add <shortname> <url>
+3) git remote remove <remote_repository_name>
+// 1) -> shows, which remote repositories are being tracked
+// 2) -> add a remote repository with the specified url under the given name
+// 3) -> remove a remote repository with the specified name from the local repository
+
+**************************************************
+git fetch
+// downloads all commits and branches from a remote repository
+
+**************************************************
+git pull
+// downloads all commits and branches from a remote repository and merges new corresponding 
+// changes into the currently selected branch
+

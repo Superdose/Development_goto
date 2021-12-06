@@ -1,0 +1,8 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ .Release.Name }}-innerconfig
+  namespace: default
+data:
+  dbhost: {{ .Values.dbhostname }}
+  orgdomain: {{ .Values.global.orgdomain }}

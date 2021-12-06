@@ -1,0 +1,23 @@
+**************************************************
+Notes::
+// yaml equivalent to simply docker
+
+**************************************************
+docker-compose --help
+// get all commands of docker-compose
+
+**************************************************
+docker-compose up [-d]
+// Create and start containers
+// -d
+// -> run containers in the background
+// runs the docker-containers via the "docker-compose.yml"
+
+**************************************************
+docker-compose down [-v]
+// Stop and remove containers, networks
+// -v
+// -> Remove named volumes declared in the volumes section of the Compose file 
+// and anonymous volumes attached to containers.
+
+**************************************************

@@ -1,0 +1,75 @@
+**************************************************
+Additional notes:
+- axon uses xstream to serialize/deserialize command, event, queries
+	-> since xstream 1.4.18 -> the serialization/deserialization has to be configured
+		-> now uses whitelisting for security reasons
+			-> for more see xStream cheatsheet
+- when resetting the axon event store (developer mode) all microservices have to be running
+	-> otherwise they will not reset their axon-server related information in their database,
+	while axon-server does
+	-> sometimes the microservices dont reset their axon-server related information 
+	in their database, even if they are running
+		-> this will lead to errors, for example events wont trigger correctly anymore
+		-> if this happens by mistake, you have to set up a new DB, so all axon-server related informations
+		are "lost"
+		-> resetting the whole original db also works
+		-> probably resetting only the important tables (axon related) also works (not tested yet)
+		-> simply resetting axon-server again when the microservice is running wont fix the problem
+
+**************************************************
+Directory for axonserver.properties::
+- Default: [axonserver-path]/config/axonserver.properties
+- YAML is also allowed: [axonserver-path]/config/axonserver.yaml
+**************************************************
+Dependencies::
+Spring Boot Starter Module For Axon Framework
+Till it is fixed: Guava: Google Core Libraries For Java
+
+**************************************************
+server.port=8024
+// HTTP port for the Axon Server console
+// you will use this port to access the axon server webinterface
+
+**************************************************
+axoniq.axonserver.name=My Axon Server
+// Unique node name of the Axon Server node
+
+**************************************************
+axoniq.axonserver.hostname=localhost
+// Hostname of the Axon Server node as communicated to clients.
+
+**************************************************
+axoniq.axonserver.devmode.enabled=true
+// enables development mode
+// if enabled, axon server will start in development mode
+// in this mode the axon webinterface will have an event restore button, so you can restore all events etc.
+
+**************************************************
+axon.eventhandling.processors.[ProcessingGroup_Name].mode=subscribing
+// used on the microservice-clients, not in the properties
+// example: axon.eventhandling.processors.product-group.mode=subscribing
+// -> the "product-group" processing group will be now managed by the subscribing-event-processor
+// in the subscribing-event-processor, all EventHandlers in the same ProcessingGroup will share the same Thread
+
+**************************************************
+axon.serializer.general=jackson
+// used on the microservice-clients, not in the properties
+// The type of serializer to use to serialize any type of object, 
+// for which no more specific serializer is configured. 
+// Defaults to an XStream based serializer.
+// Values: xstream, jackson, java, default
+
+**************************************************
+axon.serializer.events=jackson
+// used on the microservice-clients, not in the properties
+// The type of serializer to use to serialize the payload and meta data of Event Messages. 
+// Defaults to the Message Serializer, or otherwise the General Serializer.
+// Values: xstream, jackson, java, default
+
+**************************************************
+axon.serializer.messages=jackson
+// used on the microservice-clients, not in the properties
+// The type of serializer to use to serialize the payload and 
+// meta data of any type of Message as well as their responses. 
+// Defaults to the General Serializer.
+// Values: xstream, jackson, java, default

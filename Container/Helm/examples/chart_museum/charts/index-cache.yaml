@@ -1,0 +1,78 @@
+apiVersion: v1
+entries:
+  helmpushdemo:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2021-11-26T12:05:52.9327186Z"
+    description: Demo on push plugin
+    digest: a51d28748d441b501d6e4678fa1969cca641ba831df2bf43432ec25552ba1325
+    name: helmpushdemo
+    type: application
+    urls:
+    - charts/helmpushdemo-0.1.0.tgz
+    version: 0.1.0
+  myrepo2:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2021-11-26T11:38:18.4593771Z"
+    description: Another chart to show multiple charts in the repo
+    digest: 1f203bf248c274fae9f44dff78880a10f4dde6f92c218cc9479c19cf82fd165b
+    name: myrepo2
+    type: application
+    urls:
+    - charts/myrepo2-0.1.0.tgz
+    version: 0.1.0
+  repotest:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2021-11-26T11:23:28.0093726Z"
+    description: Repo Demo in Helm using ChartMuseum Version to 0.1.1
+    digest: d0eaf738dcb83d315c298dae6b04999fdf9d336b65e48de532966ee7bbfed26c
+    name: repotest
+    type: application
+    urls:
+    - charts/repotest-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2021-11-26T10:58:27.876574Z"
+    description: Repo Demo in Helm using ChartMuseum
+    digest: 23252a7c4590694cd11e9e9312fca2542aa21295611fea473ef838a9d629c15f
+    name: repotest
+    type: application
+    urls:
+    - charts/repotest-0.1.0.tgz
+    version: 0.1.0
+  upgrade-rlbk:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2021-11-29T09:23:25.2110682Z"
+    description: A Helm chart with three pods
+    digest: 70f2fa29cfafa79b41625a5e09bc33be0d74777a9396ebd7abbd737497e984b6
+    name: upgrade-rlbk
+    type: application
+    urls:
+    - charts/upgrade-rlbk-1.0.0.tgz
+    version: 1.0.0
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2021-11-29T09:01:22.6146323Z"
+    description: A Helm chart with two pods
+    digest: 90673e965420702db79939eca6bd3586b9ecabd7fa6670f3cd3b5ae2640fcfdd
+    name: upgrade-rlbk
+    type: application
+    urls:
+    - charts/upgrade-rlbk-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2021-11-29T08:46:56.265953Z"
+    description: A Helm chart for upgrade and rollback details
+    digest: c24f54b3fea7d0c796cc78ea1feaface5a68ac3f736a79109466e30d84b05024
+    name: upgrade-rlbk
+    type: application
+    urls:
+    - charts/upgrade-rlbk-0.1.0.tgz
+    version: 0.1.0
+generated: "2021-11-29T09:23:25Z"
+serverInfo: {}
