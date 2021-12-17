@@ -1,0 +1,41 @@
+**************************************************
+Additional notes:
+// import for useful static methods of mockito
+// -> import static org.mockito.Mockito.*;
+
+// import for useful static methods of junit
+// -> import static org.junit.jupiter.api.Assertions.*;
+
+// @ExtendWith(MockitoExtension.class)
+// -> this annotation on top of the test-class will enable the @Mock and @InjectMocks annotations
+
+// for parameterized tests
+// -> @ParameterizedTest -> marks the test
+// -> @ValueSource -> for single-argument tests
+// -> @MethodSource("dataFactory") -> for multi-argument tests -> specifies the (static) factory method
+
+// for Powermock (still only supports JUNIT4)
+// -> @RunWith(PowerMockRunner.class) -> enables Powermock
+// -> @PrepareForTest(EXAMPLE.class) -> tells powermock which classes to prepare at runtime for mocking etc.
+// -> import for useful static methods of powermock with mockito
+// 	-> import static org.powermock.api.mockito.PowerMockito.*;
+**************************************************
+Dependencies::
+// JUNIT5
+// -> junit-jupiter-engine (JUNIT5 -> Core)
+// -> junit-jupiter-params (JUNIT5 -> Parameterized tests -> additional to core)
+// -> junit-vintage-engine (JUnit4)
+// for JUNIT5 tests you might need to include the surefire plugin otherwise the tests might not be executed
+// -> dont get tricked by the <include> tag on the official page
+// -> only the files inside the include will be tested, if existent -> you want to delete that <include> part
+
+// Mockito
+// -> mockito-junit-jupiter (for JUnit5 support)
+// -> Mockito Core (kinda Standalone)
+
+// Powermock
+// -> powermock-module-junit4 (Powermock including JUnit4 support)
+// -> powermock-api-mockito2 (additional Powermock dependency including Mockito support) -> (?support for Mockito 3?)
+**************************************************
+
+

@@ -1,0 +1,5 @@
+**************************************************
+Most important projects:
+// a) couponservice + productservice
+// b) datingapi
+// c) calculator -> parameterized tests
