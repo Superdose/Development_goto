@@ -1,0 +1,42 @@
+**************************************************
+Additional notes:
+// collections
+// -> like tables in relational-dbs
+// -> store the documents
+
+// documents
+// -> like rows in tables in relational-dbs
+**************************************************
+Dependencies::
+Spring Data MongoDB
+
+**************************************************
+spring.data.mongodb.authentication-database=admin
+// links to the database containing all system-users etc.
+// default: admin
+
+**************************************************
+spring.data.mongodb.username=rootuser
+// the username to use, when connecting/login to mongodb
+
+**************************************************
+spring.data.mongodb.password=rootpass
+// the password to use, when connecting/login to mongodb
+
+**************************************************
+spring.data.mongodb.database=amigoscode
+// database to use
+
+**************************************************
+spring.data.mongodb.port=27017
+// the port of the mongo server
+
+**************************************************
+spring.data.mongodb.host=localhost
+// host of the mongo server
+
+**************************************************
+spring.data.mongodb.auto-index-creation=true
+// enables auto-index creation
+
+
