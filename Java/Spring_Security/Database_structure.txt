@@ -1,0 +1,25 @@
+**************************************************
+Additional notes:
+// these notes shows the basic structure of the tables etc. for the JdbcUserDetailsManager
+
+**************************************************
+Postgresql
+**************************************************
+### Table users ###
+create table users(
+	id serial primary key,
+	username varchar(45) not null,
+	password varchar(45) not null,
+	enabled int not null
+);
+
+### Table authorities ###
+create table authorities(
+	id serial primary key,
+	username varchar(45) not null,
+	authority varchar(45) not null
+);
+
+### Table insert example ###
+insert into users(username, password, enabled) values ('happy', '12345', 1);
+insert into authorities(username, authority) values ('happy', 'write');

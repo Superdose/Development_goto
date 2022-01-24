@@ -1,0 +1,98 @@
+**************************************************
+Additional notes:
+// spring security provides a crypto package with alot of to go 
+// cryptographie classes and interfaces to use for your own functionality
+// -> org.springframework.security.crypto...
+
+// CORS -> Cross-Origin Resource Sharing
+// Access-Control-Allow-Origin: Defines which origins may have access to the resource -> "*" represents any origin
+// Access-Control-Allow-Methods: Indicates the allowed HTTP methods for cross-origin requests
+// Access-Control-Allow-Headers: Indicates the allowed request headers for cross-origin requests
+// Access-Control-Allow-Credentials: Indicates whether or not the reponse to the request can be exposed when the credentials flag is true
+// Access-Control-Max-Age: Defines the expiration time of the result of the cached preflight request
+
+// CSRF -> Cross-Site Request Forgery -> classic solution: CSRF-Token
+
+// how to check registered filters inside Spring Security (not ment for production system)
+// 1) @EnableWebSecurity(debug = true) -> enable debugging of the security details
+// 2) Enable logging of the details by adding: logging.level.org.springframework.security.web.FilterChainProxy=DEBUG
+
+// provided Filters by Spring
+// 1) GenericFilterBean -> abstract class -> allows to ouse the initialization parameters and configurations done inside web.xml
+// 2) OncePerRequestFilter -> abstract class -> guarantees, that the filter will only be called once
+
+// JWT -> JSON Web Token
+// consists of:	header -> has meta-information like algorithm used and type of the token -> ie. {"alg":"HS256", "typ":"JWT"}
+		body -> stores details related to user, roles etc. that can be used for authentication and authorization
+		signature -> hash value, which is used to make sure, that the body and header data was not modified
+		-> header, body, signature --> BASE64 encoded
+
+// to use JWT in spring	-> configure stateless session-creation-policy
+			-> in cors allow the authorization header (as a non default header) to be exposed
+			-> disable csrf
+
+// using method-level-security
+// -> configure @EnableGlobalMethodSecurity(prePostEnabled = true)
+//	-> @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true) for more related annotations
+// -> types of method-level-security
+//	-> Invocation authorization
+//		-> @PreAuthorize(..) -> ie. @PreAuthorize("hasRole('ROOT')")
+//		-> @PostAuthorize(..) -> ie. @PostAuthorize("hasRole('ROOT')")
+//	-> Filtering authorization
+//		-> @PreFilter(..) -> ie. @PreFilter("filterObject.contactName == 'Test'")
+//		-> @PostFilter(..) -> ie. @PostFilter("filterObject.contactName == 'Test'")
+
+// OAuth2 (Open-Authorization)
+// Components:
+// -> User(Resource Owner) -> the person who owns resources exposed by the resource server
+// -> Client -> application that wants to access the resources owned by the user on their behalf
+// -> Authorization Server -> server that authorizes the client to access the user resources in the resource server
+// -> Resource Server -> where protected resources owned by the user is present
+// Authorization flows / grant types:
+// -> Authorization Code Grant Type -> first Authorization Code, then Token
+// -> Authorization Code Grant Type with PKCE (Proof Key for Code Exchange) -> code_verifier & code_challenge to verify user
+	-> when using public clients
+// -> Implicit Grant Type (not recommended, less secure than Authorization Code Grant Type) -> instant Token
+// -> Resource Owner Credentials Grant Type -> client communicates User credentials, instant Token
+// -> Client Credentials Grant Type -> No User involved -> client accesses auth server (instant token) and 
+// 							resource server for itself
+// -> Refresh Token Grant Type -> client gets additional refresh token, resource server says access token is expired, client requests 
+				new access token from auth server, auth server sends new access and refresh token, 
+				then requests resource server again
+**************************************************
+Dependencies::
+// Spring-Security
+// for JdbcUserDetailsManager -> JDBC API, Spring Data JPA, [DB-Driver (like PostgreSQL DRIVER)]
+// for JWT -> jjwt-api, jjwt-impl, jjwt-jackson
+// for OAuth2	-> spring-boot-starter-oauth2-client (already includes Spring-Security as Dependency) (for clients)
+//		-> spring-boot-starter-oauth2-resource-server (already includes Spring-Security as Dependency) (for resource servers)
+**************************************************
+spring.security.user.name=eazybytes
+// defines the default username when using spring security
+// -> not intended for production
+
+**************************************************
+spring.security.user.password=12345
+// defines the password for the default username
+// -> not intended for production
+
+**************************************************
+spring.security.oauth2.client.registration.[supported-provider].client-id=a14bdf646004f0563c3f
+1) spring.security.oauth2.client.registration.github.client-id=a14bdf646004f0563c3f
+// if you want to use an external oauth2 provider, which is supported by spring security, you can do the client-id
+// configuration in the .properties file (same goes for client-secret)
+
+**************************************************
+spring.security.oauth2.client.registration.[supported-provider].client-secret=6578b35ce7e41ef9d8883a017599c28ee652eb0f
+1) spring.security.oauth2.client.registration.github.client-secret=6578b35ce7e41ef9d8883a017599c28ee652eb0f
+// if you want to use an external oauth2 provider, which is supported by spring security, you can do the client-secret
+// configuration in the .properties file (same goes for client-id)
+
+**************************************************
+http://[IP:PORT]/auth/realms/[REALM_NAME]/protocol/openid-connect/certs
+1) spring.security.oauth2.resourceserver.jwt.jwk-set-uri = http://localhost:8080/auth/realms/eazybankdev/protocol/openid-connect/certs
+// Keycloak-endpoint-URL, which will be used by the resource-server
+// This way the resource-server knows, how to connect to the keycloak-server (authorization-server) 
+// and validate the access-token received from the client application
+
+**************************************************
