@@ -73,12 +73,15 @@ git log [-p] [--oneline] [--branches] [--graph] [--remotes]
 1) git checkout <commit hash>
 2) git checkout master
 3) git checkout [-b] <branch name>
+4) git checkout --track origin/<branch name>
 // 1) -> restores the state of the specified commit -> tries to keep local changes at the same time
 // -> can lead to conflicts
 // -> best practice: only do checkout, if the working directory is empty
 // 2) -> jump back to master
 // 3) -> change to the specified branch 
 // -> -b -> create a new branch and change directly to the branch
+// 4) -> checkout the remote branch and check into a local branch which resembles the state of the
+//		remote branch on the time of the checkout (remote branch checkout)
 
 **************************************************
 git stash
@@ -115,14 +118,18 @@ git branch
 // shows all existing branches
 
 **************************************************
+0) git branch
 1) git branch <branch name>
 2) git branch -d <branch name>
 3) git branch -v
 4) git branch -vv
+5) git branch -r
+// 0) -> get currently selected branch
 // 1) -> creates a new branch
 // 2) -> deletes the specified branch
 // 3) -> get more detailed information about the branch in terms of the remote repository
 // 4) -> get even more detailed information about the branch in terms of the remote repository
+// 5) -> get all existing remote branches
 
 **************************************************
 git merge <branch>
