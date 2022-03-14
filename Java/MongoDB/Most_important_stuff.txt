@@ -6,6 +6,15 @@ Additional notes:
 
 // documents
 // -> like rows in tables in relational-dbs
+
+// LUUID vs UUID
+// -> when using Spring Data with MongoDB, ID's 
+// (as UUID's) will be saved in Mongo as LUUID'S
+//  -> therefore: there is conversion happening
+//  -> usually this is not a problem when querying,
+// as conversion works both ways (in/out) but this 
+// can still lead to confusion (!!)
+ 
 **************************************************
 Dependencies::
 Spring Data MongoDB
