@@ -1,0 +1,102 @@
+**************************************************
+Additional notes:
+// Overview of Java-Packaging
+// - *.jar -> Java Archive -> Zip file containing one or more Java class files
+// - *.war -> Web Application Archive
+//	-> Zip file containing web application
+//	-> includes one or more jar files, Java class files, and web resources
+// - *.ear -> Enterprise Archive -> Zip file containing one or more WAR files
+// - Fat JAR (aka UberJAR) -> Executable Jar containing all dependencies (Used by Spring Boot)
+// - Docker Container -> Docker Image containing runtime environment, JVM, and Java package
+
+// Maven Repository types:
+// - local -> repository on local file system - <user_home>/.m2/
+// - central -> public repository hosted by Maven community - https://repo1.maven.org/maven2
+// - remote -> other locations which can be public or private
+// 	-> (i.e. JBoss, Oracle, Google Android..)
+//	-> Private -> hosted by companies for internal artifacts
+
+// Maven Dependencies:
+// - Dependency -> A dependency is an artifact which your Maven project depends upon
+//	-> typically jar or pom
+// - Transitive Dependency -> A dependency of an artifact, which your project depends on
+//	-> can go many layers deep
+//	-> cyclic dependencies are not supported
+// - Dependency Management 
+//	-> allow project authors to specify the versions of artifacts to be used
+// - Dependency Mediation 
+//	-> determines what version to use when multiple versions of the same dependency are
+//	encountered
+//	-> nearest definition in dependency tree is used
+// - Excluded Dependencies -> ability to exclude specific dependencies
+// - Optional Dependencies -> ability to make dependencies optional
+//	-> (excluded by default for downstream projects)
+
+// Maven Dependency scope:
+// - Compile 
+//	-> Default
+//	-> Available on all classpaths of project. Also, propagated to downstream projects
+// - Provided -> Like Compile, but expected to be provided by JDK or container at runtime
+// - Runtime -> Not required for compile, but needed for runtime
+//	-> on runtime and test classpaths, not compile
+// - Test -> only available on test classpath, not transitive
+// - System -> similar to provided, but JAR is added to system explicitly (via file path)
+// - Import -> imports dependencies of POM
+
+// Dependencies are managed by the Maven Dependency Plugin
+
+// Maven Standard Directory Layout:
+// https://maven.apache.org/guides/introduction/introduction-to-the-standard-directory-layout.html
+
+// Maven Build Lifecycles
+// - Maven is based on the concept of build lifecycles
+// - A lifecycle consists of phases
+// - each phase can be bound to one or more plugin goals (all work in Maven is done by plugins)
+// - Lifecycles:
+// 	A) 'Clean'
+//	-> cleans project, removes build artifacts from working directory
+//	-> defined with plugin bindings
+//	B) 'Default'
+//	-> does build and deployment of project
+//	-> defined without plugin bindings
+//	-> bindings are defined for the corresponding packaging (.jar; .war; .ear ...)
+
+**************************************************
+Dependencies::
+// 
+
+**************************************************
+mvn help:effective-pom
+// shows the complete POM with inherited properties
+
+**************************************************
+mvn dependency:tree
+// shows the dependency tree -> useful for resolving conflicts
+
+**************************************************
+mvn dependency:go-offline
+// downloads and caches the dependencies for maven
+
+**************************************************
+mvn dependency:purge-local-repository
+// clear artifacts from local repository
+
+**************************************************
+mvn dependency:sources
+// get sources for all dependencies
+
+**************************************************
+EXAMPLE EXAMPLE
+1) git checkout <commit hash>
+2) git checkout master
+3) git checkout [-b] <branch name>
+4) git checkout --track origin/<branch name>
+// 1) -> restores the state of the specified commit -> tries to keep local changes at the same time
+// -> can lead to conflicts
+// -> best practice: only do checkout, if the working directory is empty
+// 2) -> jump back to master
+// 3) -> change to the specified branch 
+// -> -b -> create a new branch and change directly to the branch
+// 4) -> checkout the remote branch and check into a local branch which resembles the state of the
+//		remote branch on the time of the checkout (remote branch checkout)
+EXAMPLE EXAMPLE
