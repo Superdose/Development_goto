@@ -60,6 +60,12 @@ Additional notes:
 //	-> does build and deployment of project
 //	-> defined without plugin bindings
 //	-> bindings are defined for the corresponding packaging (.jar; .war; .ear ...)
+//	C) 'Site'
+//	-> creates a website for the project
+//	-> defined with plugin bindings
+
+// Maven Archetypes
+// - project templates
 
 **************************************************
 Dependencies::
@@ -84,6 +90,19 @@ mvn dependency:purge-local-repository
 **************************************************
 mvn dependency:sources
 // get sources for all dependencies
+
+**************************************************
+1) mvn -N io.takari:maven:wrapper
+2) mvn -N io.takari:maven:wrapper -Dmaven=3.6.3
+// install maven wrapper (from io.takari)
+// '-N' -> Do not recurse into sub-projects
+// '-Dmaven=3.6.3' install maven wrapper with maven version 3.6.3
+
+**************************************************
+mvn archetype:generate -DarchetypeGroupId=org.apache.maven.archetypes \ 
+-DarchetypeArtifactId=maven-archetype-simple -DarchetypeVersion=1.4
+// sample for creating a simple maven project with the 'maven-archetype-simple'
+// archetype
 
 **************************************************
 EXAMPLE EXAMPLE
