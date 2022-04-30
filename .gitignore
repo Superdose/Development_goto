@@ -6,3 +6,5 @@
 
 Java/**/target
 Java/**/target/
+
+.flattened-pom.xml
