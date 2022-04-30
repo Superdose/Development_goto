@@ -9,12 +9,14 @@ Additional notes:
 // - Fat JAR (aka UberJAR) -> Executable Jar containing all dependencies (Used by Spring Boot)
 // - Docker Container -> Docker Image containing runtime environment, JVM, and Java package
 
+
 // Maven Repository types:
 // - local -> repository on local file system - <user_home>/.m2/
 // - central -> public repository hosted by Maven community - https://repo1.maven.org/maven2
 // - remote -> other locations which can be public or private
 // 	-> (i.e. JBoss, Oracle, Google Android..)
 //	-> Private -> hosted by companies for internal artifacts
+
 
 // Maven Dependencies:
 // - Dependency -> A dependency is an artifact which your Maven project depends upon
@@ -32,6 +34,7 @@ Additional notes:
 // - Optional Dependencies -> ability to make dependencies optional
 //	-> (excluded by default for downstream projects)
 
+
 // Maven Dependency scope:
 // - Compile 
 //	-> Default
@@ -43,10 +46,13 @@ Additional notes:
 // - System -> similar to provided, but JAR is added to system explicitly (via file path)
 // - Import -> imports dependencies of POM
 
+
 // Dependencies are managed by the Maven Dependency Plugin
+
 
 // Maven Standard Directory Layout:
 // https://maven.apache.org/guides/introduction/introduction-to-the-standard-directory-layout.html
+
 
 // Maven Build Lifecycles
 // - Maven is based on the concept of build lifecycles
@@ -64,12 +70,193 @@ Additional notes:
 //	-> creates a website for the project
 //	-> defined with plugin bindings
 
+
 // Maven Archetypes
-// - project templates
+// -> project templates
+
+
+// Maven source control
+// -> ignore /target/..
+// -> mvn wrapper is fine (mvnw; mvnw.cmd; .mvn)
+
+
+// Maven cheat sheet
+// -> https://www.jrebel.com/blog/maven-cheat-sheet
+// -> https://www.jrebel.com/system/files/maven-cheat-sheet.pdf
+
+
+// Maven Modules
+// Basic Structure:
+// 1) Parent -> itself a POM
+// 2) (Multiple) Modules, which inherent from the parent POM
+// 2.1) These Modules can have child Modules again -> theoretically unlimited tree structure
+//
+// each Modules is effectively a Maven project
+// -> just happens to inherit from its parent module
+// 
+// 'The Reactor' is what builds each module of the maven project 
+// -> reactor collects modules to build
+// -> reactor will run selected build lifecycle against each module
+// -> reactor will determine the build order of the modules
+// -> by default 'The Reactor' will build modules sequentially
+//	-> optionally can use threads to build modules in parallel
+//
+// 'The Reactor' build Order
+// - Factors determining the build order used by reactor:
+// a) Project dependencies - modules used by other modules in the project will get built first
+// b) Plugin declaration - ie. if module is a plugin used by other modules
+// c) Order of modules declared in 'modules' section of POM
+//
+// Multi-Module Code Smells
+// -> try to use modules only when needed
+// -> multiple modules will slow down your build
+// -- Code smells with modules
+// --> one class or interface in a module
+// --> many small modules which could be combined
+// --> "Someone might need.."
+
+
+// Bill of Material (BOM)
+// -> BOM has become to mean dependencies declared within the dependencyManagement section of the POM
+// -> fully qualified dependencies are listed under the dependencyManagement section of the POM
+// -> dependencies declared under the dependencies section of the pom inherit from dependencyManagement (version/packaging)
+// -> typically used to standardize versions
+// -> Any dependencies declared in the dependencyManagement section of the pom DO NOT become transitive dependencies for the artifact
+// -> dependencies declared under the dependencies section of the pom DO become transitive dependencies for the artifact
+//	-> these DO inherit attributes such as version from dependencyManagement
+// -> one parent pom, which is the parent pom for all other poms for all
+// different sorts of microservices is also called a BOM 
+
+
+// Spring Boot
+// - Spring POM inheritence hierarchy
+// 1) Your Project
+// 2) Spring Boot Starter Parent 
+// 3) Spring Boot Dependencies
+// 4) Spring Boot Build
+// 5) Maven Super POM
+//
+// - Spring Boot Multi Module Project
+// -> specify the base-package in the @SpringBootApplication, so that spring-annotations
+// get picked up in all fitting packages, even if they are in different modules
+// 	-> this probably also applies to @EnableJpa etc.
+
+
+// Maven Repositories
+// - Artifact Resolving Order:
+// 1) check local repository
+// 2) check maven central
+// 3) check any additional repositories configured
+//
+// Repository Mirrors
+// -> mirrors are used to override project defined repository values
+// -> mirrors are configured in settings.xml
+// 	-> default location: <home>/.m2
+// -> a mirror will override the URL of the repository
+// 	-> can be used to improve performance by directing to regional servers
+//	-> or to redirect to internal repository manager
+// -> values set in settings.xml will apply to all maven projects executed on system
+//
+// Defining additional remote repositories
+// -> repositories can be defined in the repository element of the pom or in the repositories element in the settings.xml
+// 	-> pom definitions will be specific to the maven project
+//	-> settings.xml definitions are system wide
+//
+// Repository Elements
+// -> id - unique value {required}
+// -> name - human readable name
+// -> url - URL for repository
+// -> layout - legacy or default (default is generally used)
+// -> releases - repository policy for handling downloading of releases
+// -> snapshots - repository policy for handling downloading of snapshots
+//
+// Repository Policy
+// - used for release and snapshot elements of repository definitions
+// -> enabled - true/false
+// -> updatePolicy - always, daily (default), interval:XXX (xxx in minutes), never
+// -> checksumPolicy - What to do if verification of artifacts fails
+//		-> values: ignore, fail, warn
+
+
+// Maven settings file
+// - User settings
+// -> kept in <home>/.m2/settings.xml
+// -> can be override with command line parameter -s <path/filename>
+// -> common to override in CI builds
+//
+// - Global settings
+// -> kept in maven home /conf/settings.xml
+// -> applies to all users using maven from that directory
+// -> can be override with command line parameter -gs <path/filename>
+// -> rarely used, user settings typically used instead
+//
+// - Settings elements
+// -> localRepository -  override location of local maven repository
+// -> interactiveMode - allows to set interactive/batch mode -- defaults to interactive
+// -> usePluginRegistry - Maven 2.0 -- no longer used in Maven 3.0
+// -> offline - defaults to false, if true maven will not try to connect to remote repositories
+// -> pluginGroups - list plugin group ids, to allow abbreviated plugin goals
+// -> servers - element allows you to set user credentials for servers which maven connects to
+// -> mirrors - allows you to configure mirrors for repositories
+// -> proxies - define network proxy information
+// -> profiles - define build profiles
+// -> activeProfiles - define active build profiles
+
+
+// Maven server authentication
+// -> if a remote repository is secured by a password, the servers.server element will contain
+// the authentication information -> server.id has to match the repository.id
+// -> this way, maven will use the provided authentication information, when requesting the 
+// repository
+
+
+// Maven Build Profiles
+// -> Maven Build Profiles allow you to specify a set of build configuration values
+// -> values you can specify are largely the same data elements found in pom
+// -> values set in build profiles:
+// 	- can be in addition to what is in the project pom
+//	- or used to override pom values
+// -> more than one profile can be set to active at time
+// 	-> CAUTION: no priority is available for multiple active profiles
+// 	-> duplicate property resolution is random
+//
+// -> Build Behaviour can be changed:
+// 	-> based on your desired outcome of the build
+//	-> automatically based on the runtime environment
+//	-> automatically to adopt to different operating systems
+//	-> to optionally activate specific plugins
+//	-> to provide alternative build time configuration values
+//
+// -> Declaring Build Profiles
+//	-> per Project
+//		-> in pom.xml
+//		-> command line -- mvn package -S <path to settings file>
+//	-> per user
+//		-> defined in <user home>/.m2/settings.xml
+//	-> global
+//		-> defined in <Maven Home>/conf/settings.xml
+//
+// -> Which Declaration method to use?
+// 	-> project pom
+//		-> build needs to be portable to other computers (ie CI server, other developers)
+//		-> when others may or may not need build features
+//	-> settings.xml
+//		-> you want the profile available to many projects
+//		-> frequently used for configuration of repository manager
+//		-> protection of secrets
+//		-> environment config values
+
+
+// Maven Release Plugin
+// -> used to release versions of your project
+// 
 
 **************************************************
-Dependencies::
-// 
+1) mvn [plugin]:[goal]
+2) mvn clean [plugin]:[goal]
+// 1) how to call a specific plugin-goal with maven
+// 2) you can combine calls to maven lifecycles, phases and plugin-goals
+// -> here we first call the clean lifecycle and then a plugin-goal
 
 **************************************************
 mvn help:effective-pom
@@ -101,21 +288,68 @@ mvn dependency:sources
 **************************************************
 mvn archetype:generate -DarchetypeGroupId=org.apache.maven.archetypes \ 
 -DarchetypeArtifactId=maven-archetype-simple -DarchetypeVersion=1.4
-// sample for creating a simple maven project with the 'maven-archetype-simple'
-// archetype
+// sample for creating a simple maven project with the 'maven-archetype-simple' archetype
 
 **************************************************
-EXAMPLE EXAMPLE
-1) git checkout <commit hash>
-2) git checkout master
-3) git checkout [-b] <branch name>
-4) git checkout --track origin/<branch name>
-// 1) -> restores the state of the specified commit -> tries to keep local changes at the same time
-// -> can lead to conflicts
-// -> best practice: only do checkout, if the working directory is empty
-// 2) -> jump back to master
-// 3) -> change to the specified branch 
-// -> -b -> create a new branch and change directly to the branch
-// 4) -> checkout the remote branch and check into a local branch which resembles the state of the
-//		remote branch on the time of the checkout (remote branch checkout)
-EXAMPLE EXAMPLE
+mvn clean
+// triggers clean phase in clean-lifecycle
+// -> basically deletes '/target'
+
+**************************************************
+mvn [lifecycles/phases] -DskipTests
+1) mvn clean verify -DskipTests
+// goes trough all lifecyclephases as usual, but skips the tests
+
+**************************************************
+mvn [lifecycles/phases] -DskipITs
+1) mvn clean verify -DskipITs
+// goes trough all lifecyclephases as usual, but skips the integration tests
+// only works with the 'failsafe-plugin' included in the project
+
+**************************************************
+1) mvn spring-boot:run
+2) mvn clean spring-boot:run
+// 1) builds and runs the spring-boot application
+// 2) first calls the clean lifecycle and then build and run the spring-boot application
+// -> this will always force a recompile
+// Only works with spring-boot (spring-boot-maven-plugin)
+// If you feel like the IDE is behaving weird or not compiling the spring-boot project right
+// you should try 'mvn clean spring-boot:run' to eliminate the IDE-variable as cause of fail
+
+**************************************************
+1) mvn clean install spring-boot:run -pl [module containing spring-boot-main]
+2) mvn clean install spring-boot:run -pl web-app
+// How to start a multi module spring-boot-application via console
+// Everything works as normal, except you have to specify the module, which contains 
+// the spring-boot-main
+
+**************************************************
+1) mvn install:install-file -Dfile=[file(.jar)] -DgroupId=[groupId] -DartifactId=[artifactId] -Dversion=[version] -Dpackaging=[(jar)/packaging]
+2) mvn install:install-file -Dfile=./ojdbc11.jar -DgroupId=com.oracle -DartifactId=ojdbc11 -Dversion=21.5 -Dpackaging=jar
+// install a local dependency on your machine into your local maven repository 
+
+**************************************************
+mvn --encrypt-master-password
+// opens a promt for you to enter a master-password for maven
+// you have to move this encrypted-master-password into ~/.m2/settings-security.xml
+// -> <settingsSecurity><master>ENCRYPTED_PASSWORD</master></settingsSecurity>
+
+**************************************************
+mvn --encrypt-password
+// opens a prompt to enter a password, which then will encrypted with the master password
+// usually used for server authentication via maven
+// -> insert encrypted password into settings.xml servers.server.password
+
+**************************************************
+1) mvn [lifecycles/phases] -P <profile-1>,<profile-2>
+2) mvn [lifecycles/phases] -P !<profile-1>,!<profile-2>
+3) mvn [lifecycles/phases] -P -<profile-1>,-<profile-2>
+// add or remove profiles when calling lifecycles/phases
+// 1) add profiles
+// 2) && 3) remove profiles (! or - are both valid as remove characters)
+
+**************************************************
+mvn help:active-profiles
+// shows active profiles
+
+

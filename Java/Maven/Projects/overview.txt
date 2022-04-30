@@ -1,0 +1,53 @@
+[file: Basics]
+hello-world-maven-wrapper -> basic stuff
+
+[file: Code-Generation]
+XsdToJavaMaven -> xsd-xml to java source code
+mb2g-json-to-java -> json to java source code
+mb2g-lombok -> lombok
+maven-mapstruct
+
+[file: JVM-Languages]
+Groovy-And-Java-with-Maven -> Groovy setup with maven
+Kotlin-And-Java-with-Maven -> Kotlin setup with maven
+Scala-And-Java-with-Maven -> Scala currently does not work with Java 11
+
+[file: Testing]
+mb2g-testing-pojos
+mb2g-testing-junit4
+mb2g-testing-junit5
+mb2g-testing-junit4-and-junit5
+mb2g-groovy-junit4-spock -> testing with groovy/junit4/spock -> doesnt work, so probably leave out
+mb2g-junit4-junit5-spock-groovy -> works
+mb2g-maven-testng -> unnecessary
+mb2g-test-reports -> how to generate additional maven surefire reports (for run tests)
+maven-failsafe-integration-test -> how to run integration tests with failsafe
+maven-test-coverage-with-jacoco -> plugin to show test coverage for ur tests (here for unit and integration-tests (failsafe))
+
+[file: Spotbugs]
+maven-spotbugs -> nice plugin, that analysis your code for bug patterns etc. and creates a report for you
+
+[file: Maven_Modules]
+Multi-Module-Maven -> complete maven project with several modules; README helps explain where to find what
+
+[file: Spring-Maven]
+demo-from-intellij -> sample Spring-Boot project
+spring-multi-module -> multi-module spring-boot project
+spring-multi-module-assignment -> multi-module spring-boot project, which was an assignment (not commencted)
+
+[file: Maven-Repository]
+public-repos -> shows how to add an external public repository to the maven project
+own-remote-repo -> shows how to deploy maven artifacts into a remote repository
+nexus-remote-repository -> shows how to use and deploy maven artifacts with/into a remote repository
+
+[file: Build-Profiles]
+own-remote-repo-with-profile -> shows how to deploy maven artifacts into a remote repository using a build profile
+nexus-remote-repository-with-profile -> shows how to use and deploy maven artifacts with/into a remote repository using build profiles
+
+[file: Properties-In-Profile]
+Properties-via-profile -> showcases setting properties of a maven project in a profile
+
+[file: Bom-Examples]
+brewery-pom -> acts as bill of materials
+
+

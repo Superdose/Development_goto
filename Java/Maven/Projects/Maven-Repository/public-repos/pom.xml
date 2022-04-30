@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Maven coordinates are used to identify artifacts -->
+  <!-- Together, they identify a 'location' in a Maven repository -->
+  <!-- groupId -> typically unique to an organization -->
+  <!-- artifactId -> typically the project name. A descriptor for the artifact -->
+  <!-- version -> refers to a specific version of the project -->
+  <!-- groupId and version can be inherited from a parent POM -->
+  <!-- '-SNAPSHOT' in <version> tells Maven, that this specific artifact is still
+  under development, go check for a newer version -->
+  <groupId>guru.springframework.repository.public</groupId>
+  <artifactId>howto</artifactId>
+  <version>1.0-SNAPSHOT</version>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <java.version>11</java.version>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+  </properties>
+
+  <repositories>
+    <!-- We add the jboss/redhat enterprise repository as a public repository to our project -->
+    <!-- Here we need the 'org.jboss.ejb3.jboss-ejb3-api' dependency of the repo -->
+    <repository>
+      <id>redhat-ga</id>
+      <name>JBoss Repo</name>
+      <url>https://maven.repository.redhat.com/ga/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.8.1</version>
+    </dependency>
+    <!-- Dependency added for showcase of need for another public repository -->
+    <dependency>
+      <groupId>org.jboss.ejb3</groupId>
+      <artifactId>jboss-ejb3-api</artifactId>
+      <version>3.1.0</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <!-- Hooks a new execution called 'auto-clean' into the initialize phase -->
+        <!-- (default lifecycle) -->
+        <!-- this execution will call the 'clean' goal of the 'maven-clean-plugin' plugin -->
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>auto-clean</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!-- Configuration for the 'maven-jar-plugin' -->
+        <!-- We configure the main-class to use (will be included in manifest) -->
+        <!-- Because this will be compiled down into a thin-jar, java expects us to include -->
+        <!-- the dependencies in the same folder as the executable jar -->
+        <!-- The apache.commons dependency will not be compiled into the executable jar -->
+        <!-- This is why we can't run the packaged jar by default standalone -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <!-- We don't have any packages, so this is already the fully qualified path -->
+              <mainClass>HelloWorld</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <!-- The maven site plugin, which maven will bring by default, is not up-to-date and -->
+        <!-- will lead to conflicts. -->
+        <!-- Therefore, we include the 'newest' version of the plugin into our project. -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <version>3.7.1</version>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

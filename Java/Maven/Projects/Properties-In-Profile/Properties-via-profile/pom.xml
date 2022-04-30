@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>guru.springframework.properties.in.profile</groupId>
+  <artifactId>base</artifactId>
+  <version>1.0-SNAPSHOT</version>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <java.version>11</java.version>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <TEST_HOST>test.example.com</TEST_HOST>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>5.8.2</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.0.0-M6</version>
+        <configuration>
+          <environmentVariables>
+            <TEST_HOST>${TEST_HOST}</TEST_HOST>
+          </environmentVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <!-- The sole purpose of this profile is to showcase properties set in the profile -->
+    <profile>
+      <id>test-profile</id>
+      <properties>
+        <!-- We set the property <TEST_HOST>..</TEST_HOST> to 'Profile: test-profile' -->
+        <TEST_HOST>Profile: test-profile</TEST_HOST>
+      </properties>
+    </profile>
+    <!-- The sole purpose of this profile is to showcase properties set in the profile -->
+    <profile>
+      <id>uat</id>
+      <properties>
+        <!-- We set the property <TEST_HOST>..</TEST_HOST> to 'UAT ENVIRONMENT' -->
+        <TEST_HOST>UAT ENVIRONMENT</TEST_HOST>
+      </properties>
+    </profile>
+  </profiles>
+
+</project>

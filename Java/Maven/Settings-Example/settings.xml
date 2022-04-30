@@ -1,0 +1,82 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                              https://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+
+  <!-- ********************************************************** -->
+  <!-- ********************* Maven Course *********************** -->
+  <!-- ********************************************************** -->
+
+  <!-- Example server authentication -->
+  <!-- <servers>
+    <server>
+      <id>packagecloud.my_repo_releases</id>
+      <password>The_Password_(Best_Encrypted)</password>
+    </server>
+    <server>
+      <id>packagecloud.my_repo_snapshots</id>
+      <password>The_Password_(Best_Encrypted)</password>
+    </server>
+  </servers> -->
+
+  
+  <servers>
+    <server>
+      <id>localhost.nexus.snapshot.repo</id>
+      <username>admin</username>
+      <password>admin123</password>
+    </server>
+    <server>
+      <id>localhost.nexus.release.repo</id>
+      <username>admin</username>
+      <password>admin123</password>
+    </server>
+  </servers>
+  
+  <!-- ********* EXAMPLE FOR PROFILE ******************************************************* -->
+  <!-- Example for a profile, which adds a public repository -->
+  <profiles>
+    <profile>
+      <id>jboss</id>
+      <repositories>
+        <repository>
+          <id>redhat-ga</id>
+          <name>JBoss Repo</name>
+          <url>https://maven.repository.redhat.com/ga/</url>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
+
+  <activeProfiles>
+    <activeProfile>jboss</activeProfile>
+  </activeProfiles>
+  <!-- ********* END EXAMPLE FOR PROFILE **************************************************** -->
+
+  <!-- Example for Maven mirrors -->
+  <!-- Here we mirror all repositories to a repository group we created our self, -->
+  <!-- which is a virtual repo, that includes our own repos and the central maven repo -->
+  <mirrors>
+    <mirror>
+      <id>central</id>
+      <name>central-mirror</name>
+      <url>http://localhost:8081/repository/nexus-group/</url>
+      <mirrorOf>*</mirrorOf>
+    </mirror>
+  </mirrors>
+
+  <!-- Example for Maven mirrors -->
+  <!--<mirrors>
+    <mirror>
+      <id>uk.maven.org</id>
+      <name>UK central</name>
+      <url>http://uk.maven.org/maven2</url>
+      <mirrorOf>central</mirrorOf>
+    </mirror>
+  </mirrors> -->
+  
+</settings>

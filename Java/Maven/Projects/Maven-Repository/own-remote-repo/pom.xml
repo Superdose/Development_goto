@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>guru.springframework.own.remote.repository</groupId>
+  <artifactId>base</artifactId>
+  <version>1.0-SNAPSHOT</version>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <java.version>11</java.version>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+  </properties>
+
+  <!-- We include a maven-wagon extension for packagecloud (here the example maven repo provider) -->
+  <build>
+    <extensions>
+      <extension>
+        <groupId>io.packagecloud.maven.wagon</groupId>
+        <artifactId>maven-packagecloud-wagon</artifactId>
+        <version>0.0.6</version>
+      </extension>
+    </extensions>
+  </build>
+
+  <!-- DistributionManagement tells maven where to deploy things -->
+  <!-- Most DistributionManagements will be secured - dont forget to add the  -->
+  <!-- authentication-information into the settings.xml -->
+  <!-- >> The repository.id and server.id (authentication) have to match -->
+  <!-- In DistributionManagement we differentiate between (final-version) Repos and Snapshot-Repos -->
+  <distributionManagement>
+    <repository>
+      <id>packagecloud.my_repo_releases</id>
+      <url>packagecloud+http://packagecloud.dev:3000/testy/my_repo</url>
+    </repository>
+    <snapshotRepository>
+      <id>packagecloud.my_repo_snapshots</id>
+      <url>packagecloud+http://packagecloud.dev:3000/testy/my_repo</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+</project>

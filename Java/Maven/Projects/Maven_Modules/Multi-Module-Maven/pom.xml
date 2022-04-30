@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>guru.springframework.multi</groupId>
+  <artifactId>own</artifactId>
+  <version>${revision}</version>
+
+  <!-- In a Maven-Module-Project the master-pom is simply packaged as a pom. -->
+  <!-- It isn't a jar, because the master itself doesn't contain any source code etc. -->
+  <packaging>pom</packaging>
+
+  <!-- All the modules of this project. -->
+  <!-- Each module will inherit from the parent-pom (if the parent is specified as the parent). -->
+  <!-- (Technically modules don't have to link to the parent as <parent>) -->
+  <modules>
+    <module>jpa-entities</module>
+    <module>from-intellij</module>
+    <module>web-api</module>
+    <module>web-app</module>
+    <module>converters</module>
+  </modules>
+
+  <properties>
+    <!-- Tag specifically to set the project version without repeating yourself -->
+    <!-- The Revision element can lead to problems, when the project-artifacts are created and -->
+    <!-- put into your local repository or a remote repository. -->
+    <!-- (On all versions etc. simply the property '${revision}' would remain) -->
+    <!-- To solve this we can use the 'flatten-plugin' (from MojoHaus) -->
+    <revision>1.0-SNAPSHOT</revision>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <java.version>11</java.version>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <org.mapstruct.version>1.4.2.Final</org.mapstruct.version>
+    <jaxb.version>2.3.0</jaxb.version>
+    <hibernate.version>6.0.0.Final</hibernate.version>
+    <lombok.version>1.18.22</lombok.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct</artifactId>
+        <version>${org.mapstruct.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.hibernate.orm</groupId>
+        <artifactId>hibernate-core</artifactId>
+        <version>${hibernate.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <version>${lombok.version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>javax.xml.bind</groupId>
+        <artifactId>jaxb-api</artifactId>
+        <version>${jaxb.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.sun.xml.bind</groupId>
+        <artifactId>jaxb-core</artifactId>
+        <version>${jaxb.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.sun.xml.bind</groupId>
+        <artifactId>jaxb-impl</artifactId>
+        <version>${jaxb.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <plugins>
+      <!-- flatten-maven-plugin to resolve '${revision}' conflict during build/install etc. -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+        <!--<version>1.2.2</version>-->
+        <configuration>
+          <!-- flattenMode needs to be set to 'bom', so that flatten process will also be applied -->
+          <!-- to the maven-artifacts, which then will be pushed into the local and remote repositories -->
+          <flattenMode>bom</flattenMode>
+        </configuration>
+        <executions>
+          <!-- enable flattening -->
+          <execution>
+            <id>flatten</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>flatten</goal>
+            </goals>
+          </execution>
+          <!-- ensure proper cleanup -->
+          <execution>
+            <id>flatten.clean</id>
+            <phase>clean</phase>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!-- The enforcer plugin will check the rules you set and make sure, that they are  -->
+        <!-- applied during the build-process.  -->
+        <!-- If any rule is broken, the enforcer plugin will make the build process fail. -->
+        <!-- This is for showcase, this project doesn't absolutely need it. -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.0.0-M3</version>
+        <executions>
+          <execution>
+            <id>enforce-env-requirements</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireJavaVersion>
+                  <version>[11,)</version>
+                </requireJavaVersion>
+                <requireMavenVersion>
+                  <version>[3.5,)</version>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

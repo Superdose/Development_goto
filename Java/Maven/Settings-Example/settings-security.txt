@@ -1,0 +1,2 @@
+The settings-security.xml file contains the created master password, 
+which can be used to encrypt passwords for servers etc, in profiles and so on.

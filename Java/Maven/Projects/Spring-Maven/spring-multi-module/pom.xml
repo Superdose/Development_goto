@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- In a Maven-Module-Project the master-pom is simply packaged as a pom. -->
+	<!-- It isn't a jar, because the master itself doesn't contain any source code etc. -->
+	<packaging>pom</packaging>
+
+	<!-- All the modules of this project. -->
+	<!-- Each module will inherit from the parent-pom (if the parent is specified as the parent). -->
+	<!-- (Technically modules don't have to link to the parent as <parent>) -->
+	<modules>
+		<module>web-app</module>
+		<module>web-model</module>
+	</modules>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.6.6</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+
+	<groupId>guru.springframework.multi.module</groupId>
+	<artifactId>springmultimodule</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<name>spring-multi-module</name>
+	<description>spring-multi-module</description>
+
+	<properties>
+		<java.version>11</java.version>
+		<some.custom.property>foo bar</some.custom.property>
+	</properties>
+
+	<!-- We include lombok as a dependency in the root, because we want to use lombok -->
+	<!-- in all child modules -->
+	<dependencies>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+	</dependencies>
+
+	<!-- You usually only want to include the spring-boot-maven-plugin in the module, which contains -->
+	<!-- the spring-boot-main and therefore should be packaged into a FatJar. -->
+	<!--<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build> -->
+
+</project>
