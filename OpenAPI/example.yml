@@ -1,0 +1,402 @@
+openapi: 3.0.0 # OpenAPI-Version
+info:
+  version: '1.0' # version of this api specification
+  title: 'OpenAPI Course' # title of this api specification
+  description: 'Specification for OpenAPI Course' # description of this api specification
+  termsOfService: 'http://example.com/terms/' # terms of service regarding this api specification
+  contact: # contact details
+    name: 'John Seneg' 
+    url: 'https://test.com'
+    email: 'john.seneg@test.com'
+  license: # license for this api specification
+    name: 'Apache 2.0'
+    url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
+servers: # server that implement this api specification
+  - url: 'https://dev.example.com'
+    description: 'Development server'
+paths:
+  /v1/customers: # /v1/customers endpoint
+    get: # defining Http GET
+      summary: List Customers # summary for this endpoint
+      description: Get a list of customers in the system # more detailed description of this endpoint
+      tags: # tags (for showing endpoints in the same group)
+        - Customers
+      operationId: listCustomersV1 # unique id - can be used by external applications, that work with a defined OpenAPI specification
+      parameters: # parameters regarding this endpoint (for example: Query-Params, Path-Params(ie. variables))
+        - $ref: '#/components/parameters/PageNumberParam' # link to parameter definition in components section
+        - $ref: '#/components/parameters/PageSizeParam' # link to parameter definition in components section
+      responses: # define possible responses for this enpdoint
+        '200': # 200 response
+          description: List of Customers # description of response
+          content:
+            application/json:
+              schema: # application/json-schema definition for response
+                $ref: '#/components/schemas/CustomerPagedList' # link to schema definition in components section
+      security: [] # Overriding security, which has been set at the specification level (ie. global) -> this endpoint doesnt need authentication
+      
+    post: # defining Http POST
+      summary: Create customer # summary for this endpoint
+      description: Create a new customer # more detailed description of this endpoint
+      tags: # tags (for showing endpoints in the same group)
+        - Customers
+      requestBody: # requestbody definition for this request
+        required: true # requestbody is necessary
+        content:
+          application/json:
+            schema: # application/json-schema definition for response
+              $ref: '#/components/schemas/Customer' # link to schema definition in components section
+      responses: # define possible responses for this endpoint
+        '201': # 201 response
+          description: Customer created # description of response
+          headers: # headers specification for this response
+            Location:
+              description: Location of the created customer # description of 'Location' header-key
+              schema: # schema definition for 'Location' header-value
+                type: string # its a string
+                format: uri # uri format
+                example: http://example.com/v1/customers/{assignedValue} # example for 'Location'
+        '400': # 400 response
+          description: Bad request. # description of response
+        '409': # 409 response
+          description: conflict. # description of response
+
+  /v1/customers/{customerId}: # /v1/customers endpoint
+    get: # defining Http GET
+      summary: Get Customer by Id # summary for this endpoint
+      description: Get a single customer by its id value # more detailed description of this endpoint
+      tags: # tags (for showing endpoints in the same group)
+        - Customers
+      operationId: getCustomerByIdV1 # unique id - can be used by external applications, that work with a defined OpenAPI specification
+      parameters: # parameters regarding this endpoint (for example: Query-Params, Path-Params(ie. variables))
+        - $ref: '#/components/parameters/CustomerIdPathParam' # link to parameter definition in components section
+      responses: # define possible responses for this endpoint
+        '200': # 200 response
+          description: Found Customer # description of response
+          content:
+            application/json:
+              schema: # application/json-schema definition for response
+                $ref: '#/components/schemas/Customer' # link to schema definition in components section
+        '404': # 404 response
+          description: Customer not found. # description of response
+      security: [] # Overriding security, which has been set at the specification level (ie. global) -> this endpoint doesnt need authentication
+      
+    put:
+      summary: Update customer
+      description: Update customer by id.
+      tags:
+        - Customers
+      parameters:
+        - $ref: '#/components/parameters/CustomerIdPathParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Customer'
+      responses:
+        '204':
+          description: Customer updated.
+        '400':
+          description: Bad request.
+        '409':
+          description: Conflict.
+    delete:
+      summary: Delete customer
+      description: Delete customer by id.
+      tags:
+        - Customers
+      parameters:
+        - $ref: '#/components/parameters/CustomerIdPathParam'
+      responses:
+        '200':
+          description: Customer deleted.
+        '404':
+          description: Customer not found.
+
+            
+  /v1/beers:
+    get:
+      summary: List Beers
+      description: List all beers in the system.
+      tags:
+        - Beers
+      operationId: listBeersV1
+      parameters:
+        - $ref: '#/components/parameters/PageNumberParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: List of Beers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeerPagedList'
+        '404':
+          description: No beers found.
+
+    post:
+      summary: Create a beer
+      description: Create a new beer.
+      tags:
+        - Beers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Beer'
+      responses:
+        '201':
+          description: Beer created
+          headers:
+            Location:
+              description: Location of the created beer
+              schema:
+                type: string
+                format: uri
+                example: http://example.com/v1/beers/{assignedValue}
+        '400':
+          description: Bad request.
+        '409':
+          description: Conflict.
+        
+
+  /v1/beers/{beerId}:
+    get:
+      summary: Get beer by id
+      description: Get a single beer by its id value.
+      tags:
+        - Beers
+      operationId: getBeerByIdV1
+      parameters:
+        - $ref: '#/components/parameters/BeerIdPathParam'
+      responses:
+        '200':
+          description: Found Beer by Id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Beer'
+        '404':
+          description: Beer not found.
+        
+    put:
+      summary: Update beer
+      description: Update beer by id.
+      tags:
+        - Beers
+      parameters:
+        - $ref: '#/components/parameters/BeerIdPathParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Beer'
+      responses:
+        '204':
+          description: Beer updated.
+        '400':
+          description: Bad request.
+        '404':
+          description: Beer not found.
+        '409':
+          description: Conflict.
+    delete:
+      summary: Delete beer
+      description: Delete beer by id.
+      tags:
+        - Beers
+      parameters:
+        - $ref: '#/components/parameters/BeerIdPathParam'
+      responses:
+        '200':
+          description: Beer deleted.
+        '404':
+          description: Beer not found.
+
+security:
+  - BasicAuth: [] # Apply the 'BasicAuth' security definition to all OpenAPI specifications
+  - JwtAuthToken: [] # Apply the 'JwtAuthToken' security definition to all OpenAPI specifications
+      
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+    JwtAuthToken: # Define the 'JwtAuthToken' security definition. It uses the bearer method -> bearer format is JWT
+      type: http
+      scheme: bearer
+      bearerFormat: JWT  
+
+  schemas:
+    Address:
+      type: object
+      properties:
+          street:
+            type: string
+            example: 12 main
+          city:
+            type: string
+            example: St Pete
+          stateCode:
+            type: string
+            minLength: 2
+            maxLength: 2
+            description: 2 Letter State Code
+            enum:
+              - AL
+              - AK
+              - AZ
+              - AR
+              - CA
+          zipCode:
+            type: string
+            example: '33701'
+    Customer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        firstName:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: John
+        lastName:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: Test
+        address:
+          $ref: '#/components/schemas/Address'
+    CustomerList:
+      type: array
+      minItems: 1
+      maxItems: 100
+      description: List of Customers
+      items:
+        $ref: '#/components/schemas/Customer'
+    CustomerPagedList:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/PagedResponse'
+      properties:
+        content:
+          $ref: '#/components/schemas/CustomerList'
+    Brewery:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 0
+          maxLength: 200
+        location:
+          type: string
+    Beer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          minLength: 0
+          maxLength: 200
+        style:
+          type: string
+          enum:
+            - ALE
+            - PALE_ALE
+            - IPA
+            - WHEAT
+            - LAGER
+        upc:
+          type: string
+        price:
+          type: number
+          format: float
+        quantity:
+          type: integer
+          format: int32
+        brewery:
+          $ref: '#/components/schemas/Brewery'
+    BeerList:
+      type: array
+      description: List of beers
+      items:
+        $ref: '#/components/schemas/Beer'
+    BeerPagedList:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/PagedResponse'
+      properties:
+        content:
+          $ref: '#/components/schemas/BeerList'
+
+    PagedResponse:
+      type: object
+      properties:
+        pageable:
+          type: object
+          properties:
+            sort:
+              type: object
+              properties:
+                sorted:
+                  type: boolean
+                unsorted:
+                  type: boolean
+            offset:
+              type: integer
+              format: int32
+            pageNumber:
+              type: integer
+              format: int32
+            pageSize:
+              type: integer
+              format: int32
+            paged:
+              type: boolean
+            unpaged:
+              type: boolean
+        totalPages:
+          type: integer
+          format: int32
+  parameters:
+    PageNumberParam:
+      name: pageNumber
+      in: query
+      description: Page Number
+      schema:
+        type: integer
+        format: int32
+        default: 1
+    PageSizeParam:
+      name: pageSize
+      in: query
+      description: Page Size
+      required: false
+      schema:
+        type: integer
+        format: int32
+        default: 10
+    CustomerIdPathParam:
+      name: customerId
+      in: path
+      description: Customer Id
+      required: true
+      schema:
+        type: string
+        format: uuid
+    BeerIdPathParam:
+      name: beerId
+      in: path
+      description: Beer Id
+      required: true
+      schema:
+        type: string
+        format: uuid

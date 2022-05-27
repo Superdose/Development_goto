@@ -1,0 +1,28 @@
+**************************************************
+Additional notes:
+// HTTP Status Codes
+// - 100 series are informational in nature
+// - 200 series indicate successful request
+// - 300 series are redirections
+// - 400 series are client errors
+// - 500 series are server side errors
+
+// Common HTTP Status Codes
+// - 200 Okay; 201 Created; 202 Accepted; 204 No Content
+// - 301 Moved Permanently
+// - 400 Bad Request; 401 Not Authorized; 404 Not Found
+// - 500 Internal Server Error; 503 Service Unavailable
+
+// Github repository of the OpenAPI specification
+// https://github.com/OAI/OpenAPI-Specification
+// - examples: https://github.com/OAI/OpenAPI-Specification/tree/main/examples
+// - implementations: https://github.com/OAI/OpenAPI-Specification/blob/main/IMPLEMENTATIONS.md
+
+// Swagger documentation regarding callbacks
+// https://swagger.io/docs/specification/callbacks/
+
+// Swagger documentation regarding security (authenticaion and authorization)
+// https://swagger.io/docs/specification/authentication/
+
+
+
