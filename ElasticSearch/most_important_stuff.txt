@@ -1,0 +1,1652 @@
+**************************************************
+Additional notes:
+// What is elastic search?
+// Open-source analytics and fulltext search engine
+
+// Data is stored as documents (unit of information)
+// A documents data is separated into fields
+// Documents are json-objects
+
+// Documents are organized via indices
+// Each document is stored inside an index
+// An index groups documents together (logically) and provides 
+// configuration options (scalability and availability)
+// Index -> collection of documents with similar characteristics
+
+// Elasticsearch queries are written in Query DSL
+
+//// Further tools part of the elastic stack
+// Kibana: An analytics and visualization platform
+//
+// Logstash: Traditionally used to process logs and send them to elastic search
+// -> evolved more to a general purpose tool: Data processing pipeline
+//
+// X-Pack: Is a pack of features, which adds additional functionality to
+// elastic search and kibana
+// most important functionalities:
+// a) adds authentication and authorization (can be integrated with 
+// authentication providers)
+// b) monitor elastic stack (elastic search, logstash, kibana)
+// c) alerting
+// d) reporting (export kibana visualization and data)
+// e) provides functionality to support machine learning
+// f) 'Graph' -> analyze the relationships in your data
+// g) query elastic search with SQL
+//
+// Beats: Collection of so called data shippers
+// -> lightweight agents with a single purpose, that are installed on servers
+// -> they send data to logstash or elasticsearch
+
+
+// Elasticsearch instances are also referred to as nodes
+// -> each node belongs to a cluster
+// -> a cluster is collection of related nodes, that together contain all data
+// -> clusters are independent of each other by default
+// -> cross cluster searches are possible, but very uncommon
+
+
+// Sharding
+// - Sharding is a way to divide indices into smaller pieces
+// - each piece is referred to as a shard
+// - sharding is done at the index level
+// - the main reason to divide an index into multiple shards is to horizontally
+// scale the data volume ("be able to store more documents")
+// - a shard can be placed on any node
+// - a shard is an independent index... kind of (not quite)
+// - a shard may store up to about two billion documents
+// - sharding can increase query speed, because they enable parallel processing
+// for queries
+// - once an index is created with his defined number of shards, the number of shards
+// cannot be changed
+//	-> when 'resharding', actually a new index is created and the documents moved
+
+
+// Understanding replication
+// if a nodes hard drive fails all data is lost (theoretically)
+// -> therefore elastic search supports replication for fault tolerance
+// -> replication is supported natively and enabled by default
+//
+// How does replication work?
+// - Replication is configured at the index level
+// - Replication works by creating copies of shards, referred to as replica shards
+// - A shard that has been replicated, is called a primary shard
+// - A primary shard and its replica shards are referred to as a replication group
+// - Replica shards are a complete copy of a shard
+// - A replica shard can serve search requests, exactly like its primary shard
+// - replica shards are never stored on the same node as their primary shard counterpart
+
+// Elasticsearch also supports taking snapshots as backups
+// - snapshots can be used to restore to a given point in time
+// - snapshots can be taken at the index level, or for the entire cluster
+
+// Snapshots vs Replication
+// - use snapshots for backups
+// -> snapshots enable you to export the current state of an index or a cluster
+// at this given moment
+// - use replication for high availability (and performance)
+// -> replication ensures, that you wont loose the data the index stores at 
+// the current point in time
+// -> replication can also be used to increase the throughput of a given index
+
+
+// Node roles
+// a) Master
+// -> node may be elected as the clusters master node
+// -> master node is responsible for creating and deleting indices, among others
+// -> a node with this role will not automatically become the master node
+//	-> unless there are no other master-eligible nodes
+// -> may be used for having dedicated master nodes
+//	-> useful for large clusters
+// [Configuration: node.master: true | false]
+//
+// b) Data
+// -> enables a node to store data
+// -> storing data includes performing queries related to that data, such as search queries
+// -> for relatively small clusters, this role is almost always enabled
+// -> a node won't store any shards, if this role is disabled
+// -> typically disabled, if you want a node to be eligable to be a master
+// [Configuration: node.data: true | false]
+//
+// c) Ingest
+// -> enables a node to run ingest pipelines
+// 	-> Ingest pipelines are a series of steps (processors), that are performed when
+//	indexing documents
+//	-> Processors may manipulate documents before they are added to an index
+//	(for example: adding/removing field, changing values) 
+// - Ingesting refers to adding a document to an index
+// -> a simplified version of Logstash, directly within Elasticsearch
+// -> this role is mainly useful for having dedicated ingest nodes
+// [Configuration: node.ingest: true | false]
+//
+// d) Machine learning
+// -> 'node.ml' identifies a node as a machine learning node
+// 	-> this lets the node run machine learning jobs
+// -> 'xpack.ml.enabled' enables or disables the machine learning API for the node
+// -> useful for running ML jobs that dont affect other tasks
+// [Configuration: node.ml: true | false ; xpack.ml.enabled: true | false]
+//
+// e) Coordination
+// -> coordination refers to the distribution of queries and the aggregation of results
+// -> doesnt search any data on its own
+// -> useful for large clusters
+// -> configured by disabling all other roles (there is no direct coordination role)
+// [Configuration: node.master/node.data/node.ingest/node.ml/xpack.ml.enabled: false]
+//
+// f) Voting-only
+// -> rarely used, and you almost certainly wont use it either
+// -> a node with this role will participate in the voting for a new master node
+// -> the node cannot be elected as the master node itself, though
+// -> only used for large clusters
+
+
+// When to change node roles
+// -> "it depends"
+// -> useful for large clusters
+// -> typically done when optimizing the cluster to scale the number of requests
+//	-> you will often times change other things first
+//	-> e.g. the number of nodes, shards, replica shards, etc.
+// -> to better understand what hardware resources are used for
+// -> only change roles if you know what you are doing ;)
+
+
+// Routing
+// - How does elasticsearch know where to store documents (which shards)?
+// - How are documents found once they have been indexed (which shard)?
+// ==> routing -> Routing is the process of resolving a shard for a document
+// 
+// The formula in use: shard_num = hash(_routing) % num_primary_shards
+// -> by default the id of a document is hashed
+// -> It is possible to customize routing and not use the default routing strategy
+//	-> the default routing strategy ensures that documents are distributed evenly
+
+
+// Versioning
+// - Elasticsearch versioning is simple and not applicable to revision 
+// the history of a document
+// - Elasticsearch stores an _version metadata field with every document
+//	-> value is an integer
+//	-> value is incremented by one when modifying a document
+//
+// - Default versioning type is 'internal' versioning
+// - There is also 'external' versioning
+//	-> useful when versions are maintained outside of elasticsearch
+//		-> e.g. when documents are also stored in a RDBMS
+// - Versioning is hardly used anymore, and is mostly a thing from the past
+
+
+// Optimistic concurrency control
+// - Prevent overwriting documents inadvertently due to concurrent operations
+//	-> sending write requests to elaticsearch concurrently may overwrite
+//	changes made by other concurrent processes
+// 	-> traditionally the _version field was used to prevent this
+//	-> today we use the _primary_term and _seq_no fields
+//	-> elasticsearch will reject a write operation if it contains the 
+//	wrong primary term or sequence number
+//		-> errors should be then handled at the application level accordingly
+
+
+// Batch processing
+// -> perform index, update and delete on many documents with a single query
+// -> done via Bulk API
+// -> Bulk API expects data formatted using the NDJSON specification
+// -> Actions supported by the Bulk API
+//   a) index -> create document or replace document, if it already exists
+//   b) create -> create document (fail, if document already exists)
+//   c) update -> update the document
+//   d) delete -> delete the document
+//
+// - in Batch-Processing the first json-object defines the action and the second
+// defines the values (exception is the delete-action, which has no value ie. body)
+// -> Example:
+// POST /_bulk
+// { "index": { "_index": "products", "_id": 200 } }
+// { "name": "Espresso Machine", "price": 199, "in_stock": 5 }
+//
+// -------IMPORTANT--------
+// HTTP Content-Type header should be set as follows
+// -> 'Content-Type: application/x-ndjson' 
+// -> (application/json is accepted, but not correct)
+//
+// - Each line MUST end with a newline character (\n or \r\n)
+// -> this includes the last line!
+//
+// - A failed action will not affect other actions
+// 	-> neither will the bulk request as a whole be aborted
+//	-> the Bulk API returns detailed information about each action
+// ------------------------
+// 
+// When to use the Bulk API
+// - when you need to perform lots of write operations at the same time
+//	-> e.g. when importing data or modifying lots of data
+//
+// The Bulk API supports optimistic concurrency control
+// -> include the if_primary_term and _if_seq_no parameters within the action metadata
+
+
+// Infos about Analysis/Text Analysis
+// - applicable to text field/values
+// - text values are analyzed when indexing documents
+// - result is stored in data structures that are efficient for searching etc.
+// - the '_source' object is not used when searching for documents
+//	-> it contains the exact values specified when indexing a document
+//
+// - when a text-value is indexed, an analyzer is used to process the text
+// -> an analyzer consists of 3 building blocks: 
+//	-> Character filters, Tokenizer, Token filters
+// a) Character filters
+// - receives the original text
+// - adds, removes, or changes characters
+// - analyzers contain zero or more character filters
+// 	-> character filters are applied in the order in which they are specified
+// b) Tokenzier
+// - an analyzer contains one tokenizer
+// - tokenizes a string, i.e. splits it into tokens
+// - characters may be stripped as part of the tokenization
+// c) Token filters
+// - receive the output of the tokenizer as input (i.e. the tokens)
+// - a token filter can add, remove, or modify tokens
+// - an analyzer contains zero or more token filters
+// - token filters are applied in the order in which they are specified
+//
+// Standard Analyzer (in elasticsearch)
+// Character filters: none; Tokenzier: standard; Token filters: lowercase
+//
+// Outside the context of analyzers, we use the terminology "terms" and not "tokens"
+
+
+// Inverted indices
+// - Values for a text field are analyzed and the results are stored within
+// an inverted index
+// -> Mapping between terms and which documents contain them
+// - terms are sorted alphabetically for performance reasons
+// - inverted indices contain more than just terms and document Ids
+//	-> e.g. information for relevance scoring
+// - an inverted index exists within the scope of a field (for example "name": .. <--)
+// - there is one inverted index per text field
+// - (other data types use BKD trees for example; only text fields use inverted indices)
+
+
+// Mapping
+// - defines the structure of documents (e.g. fields and their data types)
+//	-> also used to configre how values are indexed
+// - similar to a tables schema in a relational database
+// - explicit mapping -> we define field mappings ourselves
+// - dynamic mapping -> elasticsearch generates field mappings for us
+//
+// Overview of datatypes (most important ones)
+// - object, text, float, boolean, long, date, integer, double, short
+// a) Object data type
+// 	-> used for any JSON object
+//	-> objects may be nested
+//	-> mapped using the 'properties' parameter
+//	-> objects are not stored as objects in Apache Lucene
+//		-> Objects are transformed to ensure that we can index any valid JSON
+//	-> using the object data type for arrays, which then contain JSON-objects again,
+//	will lead to lose of relationships between the data inside the single
+//	JSON-objects (which are in the array)
+//		-> refer to the Nested object, if you want to keep the relationships
+// b) Nested data type
+// 	-> similar to the object data type, but maintains object relationships
+//		-> useful when indexing arrays of objects
+//	-> enables us to query objects independently
+//		-> must use the 'nested' query
+//	-> nested objects are stored as hidden documents
+// c) Keyword data type
+//	-> used for exact matching of values
+//	-> typically used for filtering, aggregations, and sorting
+//		-> for example: searching for articles with a status of PUBLISHED
+//	-> for full-text searches, use the text data type instead
+//		-> e.g. searching the body text of an article
+// 	-> keyword fields are analyzed with the keyword analyzer
+//		-> the keyword analyzer is a no-op analyzer
+//			-> it outputs the unmodified string as a single token
+//			-> this token is then placed into the inverted index
+
+
+// Type coercion
+// - data types are inspected when indexing documents
+//	-> they are validated, and some invalid values are rejected
+//		-> e.g. trying to index an object for a text field
+//	-> sometimes, providing the wrong data type is okay
+// - coercion examples:
+//	-> string to float
+//	-> float to integer (field will truncate it to an integer)
+// - coercion is not used for dynamic mapping
+//	-> supplying "7.4" for a new field will create a text mapping
+// - always try to use the correct data type
+//	-> especially the first time you index a field
+// - disabling coercion is a matter of preference
+//	-> it is enabled by default
+
+
+// Arrays
+// - there is no such thing as an array data type
+// - any field may contain zero or more values
+//	-> no configuration or mapping needed
+// 	-> simply supply an array when indexing a document
+// - Array values should be of the same data type
+// - Coercion only works for fields that are already mapped
+//	-> if creating a field mapping with dynamic mapping, an array must contain
+//	the same data type
+// - Arrays may contain nested arrays -> Arrays are flattened during indexing
+//	-> [ 1, [ 2, 3 ] ] becomes [ 1, 2, 3 ]
+// - Remember to use the nested data type for arrays of objects if you need to
+// query the objects independently
+
+
+// Date fields
+// - specified in one of three ways:
+// 	- specially formatted strings
+//	- milliseconds since the epoch (long)
+//	- seconds since the epoch (integer)
+// - (Epoch refers to the 1st of January 1970)
+// - three supported formats:
+//	- a date without time
+//	- a date with time
+//	- milliseconds since the epoch (long)
+// - UTC timezone assumed if none is specified
+// - dates must be formatted according to the ISO 8601 specification
+// - dont provide unix timestamps for default date fields
+//
+// How date fields are stored internally in elasticsearch
+// - stored internally as milliseconds since the epoch (long)
+// - any valid value you supply at index time is converted to a long value internally
+// - dates are converted to the UTC timezone
+// - the same date conversion happens for search queries too
+
+
+// Missing fields
+// - all fields in elasticsearch are optional
+// - you can leave out a field when indexing documents
+// - e.g. unlike relational databases where you need to allow NULL values
+// - some integrity checks need to be done at the application level
+//	-> e.g. having required fields
+// - adding a field mapping does not make a field required
+// - searches automatically handle missing fields
+
+
+// Mapping parameters
+// - most important mapping parameters:
+// a) format
+// - used to customize the format for date fields
+// - recommended to use the default format whenever possible
+//	-> "strict_date_optional_time||epoch_millis"
+// - we can customize date formats using Javas DateFormatter syntax
+//	-> e.g. "dd/MM/yyyy"
+// - there are also built-in formats -> for example "epoch_second"
+//	 
+// b) properties
+// - defines nested fields for 'object' and 'nested' fields
+//
+// c) coerce
+// - used to enable or disable coercion of values (enabled by default)
+// -> see API example on how to disable coercion at index level
+//
+// d) doc_values
+// - Elasticsearch makes use of several data structures
+// 	-> No single data structure serves all purposes
+// - inverted indices are excellect for searching text
+//	-> they dont perform well for many other data access patterns
+// - "Doc values" is another data structure used by apache lucene
+//	-> optimized for a different data access pattern (document -> terms)
+//	-> essentially an "uninverted" inverted index
+// - used for sorting, aggregatios, and scripting
+// - doc_values is an additional data structure, not a replacement
+// 	-> elasticsearch automatically queries the appropriate data structure
+// - enabled by default
+// - set the doc_values parameter to false to save disk spcae
+//	-> also slightly increases the indexing throughput
+//	-> only disable doc values if you wont use aggregations, sorting, or scripting
+//	-> particularly useful for large indices; typically not worth it for small ones
+//	-> cannot be changed without reindexing documents into new index
+//	-> use with caution, and try to anticipate how fields will be queried
+// ==> advanced parameter; do not use unless you have a reason to
+//
+// e) norms
+// - normalization factors used for relevance scoring
+// - often we dont just want to filter results, but also rank them
+// - norms can be disabled to save disk space
+// 	-> useful for fields, that wont be used for relevance scoring
+//	-> the fields can still be used for filtering and aggregations
+//
+// f) index
+// - disables indexing for a field
+// - values are still stored within '_source'
+// - useful if you wont use a field for search queries
+// - saves disk space and slightly improves indexing throughput
+// - often used for time series data
+// - fields with indexing disabled can still be used for aggregations
+//
+// g) null_value
+// - NULL values cannot be indexed or searched
+// - use this parameter to replace NULL values with another value
+// - only works for explicit NULL values
+// - the replacement value must be of the same data type as the field
+// - does not affect the value stored within '_source'
+//
+// h) copy_to
+// - used to copy multiple field values into a "group field"
+// - simply specify the name of the target field as the value
+// - e.g. 'first_name' and 'last_name' => full_name
+// - values are copied, not terms/tokens
+// 	-> the analyzer of the target field is used for the values
+// - the target field is not part of '_source'
+//
+//
+// There are only specific mapping parameters, that can be changed after 
+// a mapping has been set -> generally a mapping cannot really be updated
+
+
+// Reindexing and the '_source' data types
+// - the data type in '_source' doesnt reflect how the values are indexed
+// - '_source' contains the field values supplied at index time
+// - its common to use '_source' values from search results
+//	-> for example: you would probably expect a string for a keyword field
+// - we can modify the '_source' value while reindexing
+// - alternatively this can be handled at the application level
+
+
+// Field aliases
+// - field names can be changed when reindexing document
+//	-> probably not worth it for lots of documents
+// - an alternative is to use field aliases
+//	-> doesnt require documents to be reindexed
+// - aliases can be used within queries
+// - aliases are defined with a field mapping
+// - field aliases can actually be updated (after mapping has been set)
+//	-> only its target field, though
+// 	-> simply perform a mapping update with a new 'path' value
+// - aliases dont affect indexing
+//	-> its a query-level construct
+
+
+// Multi-field mappings
+// - we can include multiple mappings for a single field
+// - most common usecase: to support text-searches, but to also support aggregation,
+// sorting and exact matches at the same time
+// - when defining additional mappings, you actually define additional fields, who
+// are building up on the actual target field 
+// e.g. 'ingredients' -> 'ingrediants.keyword'
+// 	-> by convention you name these additional fields to the type you want to define
+//	-> e.g. adding additional keyword type --> additional field name is also keyword
+
+
+// Index Templates
+// - index templates specify settings and mappings
+// - they are applied to indices that match one or more patterns
+// - patterns may include wildcards (*)
+// - index templates take effect when creating new indices
+// - a new index may match multiple index templates
+// - an order parameter can be used to define the priority of index templates
+//	-> the value is simply an integer
+//	-> templates with lower values are merged first
+
+
+// Elastic Common Schema (ECS)
+// - a specification of common fields and how they should be mapped
+// - before ECS, there was no cohesion between field names
+// 	-> ingesting logs from nginx would give different field names than apache
+// - ECS means that common fields are named the same thing
+// 	-> e.g '@timestamp'
+// - use-case independent
+// - groups of fields are referred to as field sets
+// - in ECS, documents are referred to as events
+//	-> ECS doesnt provide fields for non-events (e.g. products)
+// - mostly useful for standard events
+// 	-> e.g. web server logs, operating system metrics, etc.
+// - ECS is automatically handled by elastic stack products
+// 	-> if you use them, you often wont have to actively deal with ECS
+// - you might not need to use ECS, but its good to know what it is
+
+
+// Setting dynamic mapping to false
+// - new fields are ignored
+//	-> they are not indexed, but still part of _source
+// - fields cannot be indexed without a mapping
+//	-> when enabled, dynamic mapping creates one before indexing values
+// - new fields must be mapped explicitly
+//
+// Third possible way: Setting dynamic to 'strict'
+// - elasticsearch will reject unmapped fields
+//	-> all fields must be mapped explicitly
+//	-> similar to the behaviour of relational databases
+
+
+// Dynamic mapping
+// - enables to define dynamic mapping behaviour inside an index
+// - is defined inside the index via the mappings.dynamic_templates property
+// - parameter examples, through which dynamic mapping behaviour can be defined:
+// a) 'match' and 'unmatch' parameters
+// - used to specify conditions for field names
+// - field names must match the condition specified by the 'match' parameter
+// - 'unmatch' is used to exclude fields that were matched by the 'match' parameter
+// - both parameters support patterns with wildcards (*)
+//	-> hard coding field names wouldnt make any sense
+//
+// b) 'path_match' and 'path_unmatch' parameters
+// - these parameters evaluate the full field path (dot notation)
+// 	-> i.e. not just the field names
+// - wildcards are also supported
+
+
+// Mapping recommendations
+// a) Use explicit mappings
+// - dynamic mapping is convenient, but often not a good idea in production
+// - save disk space with optimized mappings when storing many documents
+//	-> set dynamic to 'strict', not just false
+//		-> avoids surprises and unexpected results
+//
+// b) Mapping of text fields
+// - dont always map strings as both text and keyword
+//	-> typically only one is needed
+// 	-> each mapping requires disk space
+// - Do you need to perform full-text searches?
+//	-> add a text mapping
+// - Do you need to do aggregations, sorting, or filtering on exact values?
+//	-> add a keyword mapping
+//
+// c) Disable coercion
+// - coercion forgives you for not doing the right thing
+// - try to do the right thing instead
+// - always use the correct data types whenever possible
+//
+// d) Use appropriate numeric data types
+// - for whole numbers, the integer data type might be enough
+//	-> long can store larger numbers, but also uses more disk space
+// - for decimal numbers, the float data type might be precise enough
+//	-> double stores numbers with a higher precision but uses 2x disk space
+//	-> usually float provides enough precision
+//
+// e) Specific Mapping parameter configs
+// - set 'doc_values' to false if you dont need sorting, aggregations and scripting
+// - set 'norms' to false if you don need relevance scoring
+// - set 'index' to false if you dont need to filter on values
+//	-> you can still do aggregations, e.g. for time series data
+// = probably only worth the effort when storing lots of documents
+//	-> otherwise its probably an over complication
+//	-> optimization recommended ~ 1Mill documents
+//	-> worst case scenario is only, that you will need to reindex documents
+//		-> not the end of the world 
+
+
+// Stemming
+// - stemming reduces words to their root form
+// 	-> e.g. loved -> love; drinking -> drink
+// - stemming is used by elastic search internally (the results themself are stemmed)
+// - if stemming was used on a field, and a search query is made for this field, the search
+// query with its search value will undergo the same stemming
+// 	-> the stemming will be done by an analyzer and if a search query is made,
+//	the search query params will go through the same analyzer
+
+
+// Stop words
+// - words that are filtered out during text analysis
+//	-> common words such as 'a', 'the', 'at', 'of', 'on', etc.
+//	-> they provide little to no value for relevance scoring
+// 		-> fairly common to remove such words
+//		-> less common in elasticsearch today than in the past
+//			-> the relevance algorithm has been improved significantly
+// - stop words are not removed by default, and its generally not recommended to do so
+
+
+// Built-in analyzers
+// a) Standard analyzer
+// - splits text at word boundaries and removes punctuation
+// 	-> done by the standard tokenizer
+// - lowercases letters with the lowercase token filter
+// - contains the stop token filter (disabled by default)
+//
+// b) Simple analyzer
+// - similar to the standard analyzer
+//	-> splits into tokens when encountering anything else than letters
+// - lowercases letters with the lowercase tokenizer
+//	-> unusual and a performance hack
+//
+// c) Whitespace analyzer
+// - splits text into tokens by whitespace
+// - does not lowercase letters
+//
+// d) Keyword analyzer
+// - no-op analyzer that leaves the input text intact
+//	-> it simply outputs it as a single token#
+// - used for keyword fields by default
+//	-> used for exact matching
+//
+// e) Pattern analyzer
+// - a regular expression is used to match token separators
+// 	-> it should match whatever should split the text into tokens
+// - this analyzer is very flexible
+// - the default pattern matches all non-word characters (\W+)
+// - lowercases letters by default
+
+
+// Open & closed indices
+// - an open index is available for indexing and search requests
+// - a closed index will refuse requests
+//	-> read and write requests are blocked
+//	-> necessary for performing some operations
+// - fairly quick, but might not be an option for production clusters
+//	-> e.g. mission critical systems where downtime is unacceptable
+// - alternatively reindex documents into a new index
+//	-> create the new index with the updated settings
+//	-> use an index alias for the transition
+
+
+// Dynamic and static settings
+// - dynamic settings can be changed without closing the index first
+//	-> requires no downtime
+// - static settings require the index to be closed first
+//	-> the index will be briefly unavailable
+// - analysis settings are static settings
+
+
+// Understanding relevance scores
+// - relevance scoring algorithm currently used by elasticsearch -> Okapi BM25
+// -> Parameters taken into account:
+//	- Term Frequency (TF)
+//		-> how many times does the term appear in the field for a given document?
+//	- Inverse Document Frequency (IDF)
+//		-> how often does the term appear within the index 
+//		(i.e. across all documents)
+//	- Field-length norm -> How long is the field?
+//	- BM25 handles stop words by having a 'max limit' to the Term Frequency (TF)
+//		-> simplified explanation
+//	- BM25 can be configured with parameters
+
+
+// Queries can be executed in two different contexts:
+// 1) Query Context
+//	-> "How well do documents match this query?"
+// 2) Filter Context
+//	-> "Do documents match?"
+//	-> no relevance scores are calculated
+//	-> typically used for filtering dates, status, ranges, etc.
+
+
+// Term level queries vs full text queries
+// a) term level queries
+// - term level queries search for exact values
+//	-> they are not analysed
+//
+// b) full text queries
+// - full text queries are analysed
+// 	-> search query goes through the same analysis process 
+//	as the documents text fields did
+
+**************************************************
+// Deleting an index
+DELETE /{{index_name}}
+
+**************************************************
+// Creating an index
+PUT /{{index_name}}
+
+// Setting the shard amount and replica shard amount while creating the index
+PUT /{{index_name}}
+{
+  "settings": {
+    "number_of_shards": 2,  # default = 1
+    "number_of_replicas": 2 # default = 1
+  }
+}
+
+**************************************************
+// Inserting documents into an index
+// An id will be automatically created by elasticsearch
+POST /{{index_name}}/_doc
+{
+  {{normal_json_body_with_values_and_stuff}}
+}
+
+// If you want to update/replace an existing document or
+// create a new document and define the id yourself
+PUT /{{index_name}}/_doc/{{document_id}}
+{
+  {{normal_json_body_with_values_and_stuff}}
+}
+
+**************************************************
+// Retrieving documents by id
+GET /{{index_name}}/_doc/{{document_id}}
+
+**************************************************
+// Updating documents
+POST /{{index_name}}/_update/{{document_id}}
+{
+  "doc": {
+    {{your_json_body_with_the_values_to_update}}
+    {{new_fields_in_this_body_will_automatically_be_added_to_the_document}}
+  }
+}
+
+**************************************************
+// Scripted updates
+
+// Decrease the value 'in_stock' by 1
+POST /{{index_name}}/_update/{{document_id}}
+{
+  "script": {
+    "source": "ctx._source.in_stock--" # ctx --> context
+  }
+}
+
+// Set the value 'in_stock' to 10
+POST /{{index_name}}/_update/{{document_id}}
+{
+  "script": {
+    "source": "ctx._source.in_stock = 10"
+  }
+}
+
+// Use a defined parameter inside the script to decrease the value 'in_stock'
+POST /{{index_name}}/_update/{{document_id}}
+{
+  "script": {
+    "source": "ctx._source.in_stock -= params.quantity",
+    "params": {
+      "quantity": 4
+    }
+  }
+}
+
+**************************************************
+// Upserts (Conditionally update or insert a document depending on, whether 
+// the document already exists)
+// If the document already exists, a script is run, if not, a new document is indexed
+POST /{{index_name}}/_update/{{document_id}}
+{
+  "script": {
+    "source": "ctx._source.in_stock++" # run if document already exists
+  },
+  "upsert": { # run if no document already exists -> index new document (ie. create)
+    "name": "Blender",
+    "price": 399,
+    "in_stock": 5
+  }
+}
+
+**************************************************
+// Replacing documents
+PUT /{{index_name}}/_doc/{{document_id}}
+{
+  {{normal_json_body_with_values_and_stuff}}
+}
+
+**************************************************
+// Deleting documents
+DELETE /{{index_name}}/_doc/{{document_id}}
+
+**************************************************
+// Example for optimistic concurrency control
+POST /{{index_name}}/_update/{{document_id}}?if_primary_term={{int}}&if_seq_no={{int}}
+{
+  "doc": {
+    "in_stock": 123
+  }
+}
+
+**************************************************
+// Update by query
+// Here we decrement the 'in_stock' value for all documents
+POST /{{index_name}}/_update_by_query
+{
+  "script": {
+    "source": "ctx._source.in_stock--"
+  },
+  "query": {
+    "match_all": {}
+  }
+}
+
+// Here we update the value, even if there is a version conflict
+// -> version conflict meaning, there has been a change, before the query
+// was successfully executed
+// -> (if a document has been modified since taking the snapshot, the quey is aborted)
+//	-> (this is checked with the documents primary term and sequence number)
+// -> to count version conflicts instead of aborting the query, the conflicts option
+// can be set to proceeds
+POST /{{index_name}}/_update_by_query
+{
+  "conflicts": "proceed", 
+  "script": {
+    "source": "ctx._source.in_stock--"
+  },
+  "query": {
+    "match_all": {}
+  }
+}
+
+**************************************************
+// Delete by query
+// Here we delete all documents of the given index
+POST /{{index_name}}/_delete_by_query
+{
+  "query": {
+    "match_all": {}
+  }
+}
+
+**************************************************
+// Batch processing (Uses NDJSON)
+
+// Here we create two documents inside the 'products' index
+// We specify the index-parameter inside the action-object
+POST /_bulk
+{ "index": { "_index": "products", "_id": 200 } }
+{ "name": "Espresso Machine", "price": 199, "in_stock": 5 }
+{ "create": { "_index": "products", "_id": 201 } }
+{ "name": "Milk Frother", "price": 149, "in_stock": 14 }
+
+// Here we update one document and delete another
+// In this case, we specify the index-parameter at the URI-level
+POST /products/_bulk
+{ "update": { "_id": 201 } }
+{ "doc": { "price": 129 } }
+{ "delete": { "_id": 200 } }
+
+**************************************************
+// Testing analyzers via API
+
+// Here we look how the Standard-Analyzer behaves with a given text example
+POST /_analyze
+{
+  "text": "2 guys walk into    a bar, but the third... DUCKS! :-)",
+  "analyzer": "standard"
+} 
+
+// Here we inspect the behavior of specifically set character-filters,
+// tokenizer and token-filters with a given text example 
+POST /_analyze
+{
+  "text": "2 guys walk into    a bar, but the third... DUCKS! :-)",
+  "char_filter": [], # no character_filters
+  "tokenizer": "standard", # standard tokenizer
+  "filter": ["lowercase"] # lowercase token filter 
+}
+
+**************************************************
+// Creating an index named 'reviews' with an external mapping
+PUT /reviews
+{
+  "mappings": {
+    "properties": {
+      "rating": {"type": "float"},
+      "content": {"type": "text" },
+      "product_id": {"type": "integer"},
+      "author": {
+        "properties": {
+           "first_name": {"type": "text"},
+           "last_name": {"type": "text"},
+           "email": {"type": "keyword"}
+        }
+      }
+    }
+  }
+}
+
+// Creating same index 'reviews' with an external mapping, but using dot-notation
+PUT /reviews
+{
+  "mappings": {
+    "properties": {
+      "rating": { "type": "float"},
+      "content": { "type": "text"},
+      "product_id": {"type": "integer"},
+      "author.first_name": {"type": "text"},
+      "author.last_name": {"type": "text"},
+      "author.email": {"type": "keyword"}
+    }
+  }
+}
+
+**************************************************
+// Add an external mapping for a field to an existing index
+// Here we add the field 'created_at' with the type 'date' to the index 'reviews'
+PUT /reviews/_mapping
+{
+  "properties": {
+    "created_at": {
+      "type": "date"
+    }
+  }
+}
+
+**************************************************
+// Returning the mapping of an index
+GET /{{index_name}}/_mapping
+
+// Returning the mapping of a specific field in an index
+GET /{{index_name}}/_mapping/field/{{field_name}}
+
+// Returning the mapping of a json-object key (in this example: author.email)
+GET /{{index_name}}/_mapping/field/author.email
+
+**************************************************
+// Example on how to disable coercion at the index level on index creation
+PUT /{{index_name}}
+{
+  "settings": {
+    "index.mapping.coerce": false
+  },
+  "mappings": {
+   ...
+  }
+}
+
+**************************************************
+// Reindexing documents
+POST /_reindex
+{
+  "source": {
+    "index": "{{index_name}}"
+  },
+  "dest": {
+    "index": "{{index_name}}"
+  }
+}
+
+// Here we reindex the documents in the index 'reviews' into the index 'reviews_new'
+// We also convert the field 'product_id' to a string while doing so 
+// (for the _source object)
+POST /_reindex
+{
+  "source": {
+    "index": "reviews"
+  },
+  "dest": {
+    "index": "reviews_new"
+  },
+  "script": {
+    "source": """
+      if (ctx._source.product_id != null) {
+        ctx._source.product_id = ctx._source.product_id.toString();
+      }
+    """
+  }
+}
+
+// Here we reindex the documents in the index 'reviews' into the index 'reviews_new'
+// We specified to only include the fields 'content', 'created_at' and 'rating'
+// while reindexing
+POST /_reindex
+{
+  "source": {
+    "index": "reviews",
+    "_source": ["content", "created_at", "rating"]
+  },
+  "dest": {
+    "index": "reviews_new"
+  }
+}
+
+// Here we reindex the documents in the index 'reviews' into the index 'reviews_new'
+// We change the field name 'content' to 'comment' while reindexing
+POST /_reindex
+{
+  "source": {
+    "index": "reviews"
+  },
+  "dest": {
+    "index": "reviews_new"
+  },
+  "script": {
+    "source": """
+      ctx._source.comment = ctx._source.remove("content");
+    """
+  }
+}
+
+// Here we reindex the documents in the index 'reviews' into the index 'reviews_new'
+// We specified to only include documents with a rating equal or higher than 4.0
+ POST /_reindex
+{
+  "source": {
+    "index": "reviews",
+    "query": {
+      "range": {
+        "rating": {
+          "gte": 4.0
+        }
+      }
+    }
+  },
+  "dest": {
+    "index": "reviews_new"
+  }
+}
+
+**************************************************
+// Aliases for fields
+// In the existing index 'reviews', we create the alias 'comment' for the field 'content'
+// This is done in the mapping (thats why we use the Mapping-API here)
+PUT /reviews/_mapping
+{
+  "properties": {
+    "comment": {
+      "type": "alias",
+      "path": "content"
+    }
+  }
+}
+
+**************************************************
+// Multi-field mapping
+// We create an index called 'multi_field_test' 
+// The field 'ingredients' is of type text, but we also add the keyword
+// type to the field 'ingredients'
+PUT /multi_field_test
+{
+  "mappings": {
+    "properties": {
+      "description": {
+        "type": "text"
+      },
+      "ingredients": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword"
+          }
+        }
+      }
+    }
+  }
+}
+
+**************************************************
+// Here we create an index-template named 'access-logs'
+// This template will be applied to all created indices which match the pattern 
+// 'access-logs-*'
+// Btw: This is also exactly how you update an index-template
+// Same endpoint and http verb -> include full configuration when updating
+PUT /_template/access-logs
+{
+  "index_patterns": ["access-logs-*"], # pattern to which indices this template applies
+  "settings": {
+    "number_of_shards": 2, # number of shards defined by this template
+    "index.mapping.coerce": false # coercion is disabled via this template
+  }, 
+  "mappings": { # mapping defined by this template
+    "properties": {
+      "@timestamp": {
+        "type": "date"
+      },
+      "url.original": {
+        "type": "keyword"
+      },
+      "http.request.referrer": {
+        "type": "keyword"
+      },
+      "http.response.status_code": {
+        "type": "long"
+      }
+    }
+  }
+}
+
+**************************************************
+// Retrieve an index-template
+GET /_template/{{index_template_name}}
+
+**************************************************
+// Delete an index-template
+DELETE /_template/{{index_template_name}}
+
+**************************************************
+// Disabling dynamic mapping when creating an index
+PUT /{{index_name}}
+{
+  "mappings": {
+    "dynamic": false,
+    "properties": {
+      ...
+    }
+  }
+}
+
+**************************************************
+// Setting dynamic mapping to 'strict' when creating an index
+PUT /{{index_name}}
+{
+  "mappings": {
+    "dynamic": "strict",
+    "properties": {
+      ...
+    }
+  }
+}
+
+**************************************************
+// Setting dynamic mapping to 'strict' in general, 
+// but completely enabling it on specific fields when creating an index
+// The field 'name' is 'strict', but all properties of 'other' are completely dynamic
+PUT /{{index_name}}
+{
+  "mappings": {
+    "dynamic": "strict",
+    "properties": {
+      "name": {
+        "type": "text"
+      },
+      "other": {
+        "dynamic": true,
+        "properties": {
+          "description": {
+            "type": "text"
+          },
+          ...
+        }
+      }
+    }
+  }
+}
+
+**************************************************
+// Enabling numeric detecion 
+// -> string values, if applicable, will be interpreted as float/long
+PUT /{{index_name}}
+{
+  "mappings": {
+    "numeric_detection": true,
+    "properties": {
+      ...
+    }
+  }
+}
+
+**************************************************
+// Example of defining a dynamic template on index creation, which 
+// will use integer for full numbers instead of long
+PUT /{{index_name}}
+{
+  "mappings": {
+    "dynamic_templates": [
+      {
+        "integers": {
+          "match_mapping_type": "long",
+          "mapping": {
+            "type": "integer"
+          }
+        }
+      }
+    ]
+  }
+}  
+
+**************************************************
+// Example of defining a dynamic template on index creation
+// This template will map fields with the pattern 'text_*' to the type text
+// and fields with the pattern '*_keyword'  to the type keyword
+PUT /{{index_name}}
+{
+  "mappings": {
+    "dynamic_templates": [
+      {
+        "strings_only_text": {
+          "match_mapping_type": "string",
+          "match": "text_*",
+          "unmatch": "*_keyword",
+          "mapping": {
+            "type": "text"
+          }
+        }
+      }, 
+      {
+        "strings_only_keyword": {
+          "match_mapping_type": "string",
+          "match": "*_keyword",
+          "mapping": {
+            "type": "keyword"
+          }
+        }
+      }
+    ]
+  }
+}
+
+**************************************************
+// Example of defining a dynamic template on index creation
+// This template will copy all values part of employer.name.* to
+// the index field 'full_name'
+PUT /{{index_name}}
+{
+  "mappings": {
+    "dynamic_templates": [
+      {
+        "copy_to_full_name": {
+          "match_mapping_type": "string",
+          "path_match": "employer.name.*",
+          "mapping": {
+            "type": "text",
+            "copy_to": "full_name"
+          }
+        }
+      }
+    ]
+  }
+}
+
+**************************************************
+// Here we define a custom analyzer inside an index
+// This analyzer uses the character filters "html_strip" (in this case just a single one),
+// the default tokenizer and the token filters "lowercase", "stop", "asciifolding" 
+// Its a fully custom analyzer (type: custom)
+PUT /{{index_name}}
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "{{analyzer_name}}": {
+          "type": "custom",
+          "char_filter": ["html_strip"],
+          "tokenizer": "standard",
+          "filter": ["lowercase", "stop", "asciifolding"]
+        }
+      }
+    }
+  }
+}
+
+**************************************************
+// Here we define a custom analyzer with a custom token filter inside an index.
+// We define a custom token filter with the name 'danish_stop'. This token filter uses
+// the 'stop' token filter, but overrides the 'stopwords' argument with '_danish_'.  
+// This analyzer uses the character filters "html_strip" (in this case just a single one),
+// the default tokenizer and the token filters "lowercase", "danish_stop", "asciifolding". 
+// Its a fully custom analyzer (type: custom).
+PUT /{{index_name}}
+{
+  "settings": {
+    "analysis": {
+      "filter": {
+        "danish_stop": {
+          "type": "stop",
+          "stopwords": "_danish_"
+        }
+      },
+      "char_filter": {},
+      "tokenizer": {}, 
+      "analyzer": {
+        "my_custom_analyzer": {
+          "type": "custom",
+          "char_filter": ["html_strip"],
+          "tokenizer": "standard",
+          "filter": ["lowercase", "danish_stop", "asciifolding"]
+        }
+      }
+    }
+  }
+}
+
+**************************************************
+// Here we add an analyzer to an index via the Settings-API 
+// (typically done to add an analyzer to an already existing index)
+// Be aware: to do this we have to close an index, because this is a static setting
+// This is also exactly how we update an already existing analyzer. The name of the
+// analyzer must match the name of the already existing analyzer
+PUT /{{index_name}}/_settings
+{
+  "analysis": {
+    "analyzer": {
+      "my_second_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "char_filter": ["html_strip"],
+        "filter": ["lowercase", "stop", "asciifolding"]
+      }
+    }
+  }
+}
+
+**************************************************
+// Endpoint to close an index
+POST /analyzer_test/_close
+
+**************************************************
+// Endpoint to open an index
+POST /analyzer_test/_open
+
+**************************************************
+// Reindex all documents in the index
+POST {{index_name}}/_update_by_query?conflicts=proceed
+
+**************************************************
+// Request-URI query where we find all products, which have the tag 'meat' and 
+// name 'tuna' at the same time
+GET /products/_search?q=tags:meat AND name:tuna
+
+**************************************************
+// By calling the Explain-Endpoint with a given id, we will get a response back,
+// explaining why the document is matching the document the way it is
+GET /products/_doc/1/_explain
+{
+  "query": {
+    "term": {
+      "name": "lobster"
+    }
+  }
+}
+
+**************************************************
+// Search in an index for documents, who (fully) match the field 'is_active' with true
+GET /{{index_name}}/_search
+{
+  "query": {
+    "term": {
+      "is_active": true
+    }
+  }
+}
+
+**************************************************
+// Search in an index for documents, where at least one of the given parameters 
+// in the array match the field value (match at least "Soup" or "Cake") 
+GET /{{index_name}}/_search
+{
+  "query": {
+    "terms": {
+      "tags.keyword": [
+        "Soup",
+        "Cake"
+      ]
+    }
+  }
+}
+
+**************************************************
+// Search an documents in an index via their ids
+GET /{{index_name}}/_search
+{
+  "query": {
+    "ids": {
+      "values": [
+        1, 2, 3
+      ]
+    }
+  }
+}
+
+**************************************************
+// Using the range query to search for values within a given range
+GET /{{index_name}}/_search
+{
+  "query": {
+    "range": {
+      "in_stock": {
+        "gte": 1,
+        "lte": 5
+      }
+    }
+  }
+}
+
+**************************************************
+// Using the range query to search for documents, which value are in a give date range
+GET /{{index_name}}/_search
+{
+  "query": {
+    "range": {
+      "created": {
+        "gte": "01-01-2010",
+        "lte": "31-12-2010",
+        "format": "dd-MM-yyyy"
+      }
+    }
+  }
+}
+
+**************************************************
+// Search for documents in an index with a date greater than 2010/01/01 rounded
+// to month and subtracted by one year
+GET /{{index_name}}/_search
+{
+  "query": {
+    "range": {
+      "created": {
+        "gte": "2010/01/01||/M-1y"
+      }
+    }
+  }
+}
+
+// Search for documents in an index with a date greater than now rounded
+// to the month and subtracted by one year
+GET /{{index_name}}/_search
+{
+  "query": {
+    "range": {
+      "created": {
+        "gte": "now/M-1y"
+      }
+    }
+  }
+}
+
+**************************************************
+// Search for documents in an index, where the field 'tags' is not empty
+GET /{{index_name}}/_search
+{
+  "query": {
+    "exists": {
+      "field": "tags"
+    }
+  }
+}
+
+**************************************************
+// Here we search for documents in an index, that start with the prefix "Vege"
+// in the tags field (using keyword mapping).
+// "prefix" is a term level query
+GET /{{index_name}}/_search
+{
+  "query": {
+    "prefix": {
+      "tags.keyword": "Vege"
+    }
+  }
+}
+
+**************************************************
+// Using wildcard query with the '*'
+// Wildcard queries can be slow, so be careful
+// '*' stands for all possible characters (including no character)
+GET /{{index_name}}/_search
+{
+  "query": {
+    "wildcard": {
+      "tags.keyword": "Ve*able"
+    }
+  }
+}
+
+// Using wildcard query with the '?'
+// '?' stands for a single possible character
+GET /{{index_name}}/_search
+{
+  "query": {
+    "wildcard": {
+      "tags.keyword": "Veget?ble"
+    }
+  }
+}
+
+**************************************************
+// Here we do regular expression query.
+// Find documents in an index, that math the given regular expression for the field
+// 'tags' (keyword mapping).
+// Be aware that regular expressions are not very efficient and should be avoided
+// (why would you even use regular expressions in elastic search??)
+GET /{{index_name}}/_search
+{
+  "query": {
+    "regexp": {
+      "tags.keyword": "Veget[a-zA-Z]+ble"
+    }
+  }
+}
+
+**************************************************
+// Find documents, which 'match' the given search query and return them by relevance
+// Any word given will be used to find matches -> relevance will be calculated
+GET /{{index_name}}/_search
+{
+  "query": {
+    "match": {
+      "title": "Recipes with pasta or spaghetti"
+    }
+  }
+}
+
+**************************************************
+// Find documents, which 'match' the given phrase and return them by relevance
+// The phrase given will be used to find matches -> relevance will be calculated
+GET /{{index_name}}/_search
+{
+  "query": {
+    "match_phrase": {
+      "title": "puttanesca spaghetti"
+    }
+  }
+}
+
+**************************************************
+// Find documents, which 'match' the given search query and return them by relevance
+// Any word given in 'multi_match.query' will be used to find matches -> relevance will
+// be calculated
+// 	-> in this case the word 'pasta' will be used to search through multiple fields
+//		-> the field 'title' and 'description'
+//		-> after calculating the result and relevance for these fields, the field
+//		with the highest relevance will be used for the relevance score
+//		of the document 
+GET /{{index_name}}/_search
+{
+  "query": {
+    "multi_match": {
+      "query": "pasta",
+      "fields": ["title", "description"]
+    }
+  }
+}
+
+**************************************************
+// Here we do a composite query (bool), to define multiple search parameters
+// -> the query must find matches in 'ingrediants.name' with 'parmesan'
+//	-> will be used for relevance score
+// -> the query must not find documents containing 'tuna' in 'ingrediants.name'
+// 	-> not used for relevance scoring --> its true or false
+// -> the query "should" find documents containing 'parsley' in 'ingrediants.name'
+//	-> should means, that this is not necessary but will increase the relevance score,
+//	when match is found
+// -> the query will "filter" 'preparation_time_minutes' with 'lower then equals' '15'
+//	-> this is in the filter context
+//		-> not used for relevance scoring
+//		-> true or false (has to match)
+GET /{{index_name}}/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "ingredients.name": "parmesan"
+          }
+        }
+      ],
+      "must_not": [
+        {
+          "match": {
+            "ingredients.name": "tuna"
+          }
+        }
+      ], 
+      "should": [
+        {
+          "match": {
+            "ingredients.name": "parsley"
+          }
+        }
+      ], 
+      "filter": [
+        {
+          "range": {
+            "preparation_time_minutes": {
+              "lte": 15
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+
+**************************************************
+// Debugging composite query
+// Here we do a composite query (bool), to define multiple search parameters
+// -> the query must find matches in 'ingrediants.name' with 'parmesan'
+//	-> will be used for relevance score
+//	-> we defined the 'name' 'parmesan_must' for it
+// -> the query must not find documents containing 'tuna' in 'ingrediants.name'
+// 	-> not used for relevance scoring --> its true or false
+//	-> we defined the 'name' 'tuna_must_not' for it
+// -> the query "should" find documents containing 'parsley' in 'ingrediants.name'
+//	-> should means, that this is not necessary but will increase the relevance score,
+//	when match is found
+//	-> we defined the 'name' 'parsley_should' for it
+// -> the query will "filter" 'preparation_time_minutes' with 'lower then equals' '15'
+//	-> this is in the filter context
+//		-> not used for relevance scoring
+//		-> true or false (has to match)
+//	-> we defined the 'name' 'prep_time_filter' for it
+// - we can use the defined names for each individual query definition to debug the results
+//	-> when querying, we get a result, which includes the object named 'matched_queries',
+//	which specifies, which named query definitions applied for the document
+GET /recipe/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "ingredients.name": {
+              "query": "parmesan",
+              "_name": "parmesan_must"
+            }
+          }
+        }
+      ],
+      "must_not": [
+        {
+          "match": {
+            "ingredients.name": {
+              "query": "tuna",
+              "_name": "tuna_must_not"
+            }
+          }
+        }
+      ], 
+      "should": [
+        {
+          "match": {
+            "ingredients.name": {
+              "query": "parsley",
+              "_name": "parsley_should"
+            }
+          }
+        }
+      ], 
+      "filter": [
+        {
+          "range": {
+            "preparation_time_minutes": {
+              "lte": 15,
+              "_name": "prep_time_filter"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+
+
+
